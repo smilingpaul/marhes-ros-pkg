@@ -11,6 +11,10 @@
   <depend package="roscpp"/>
   <depend package="tf"/>
 
+  <export>
+    <cpp  ldflags="-lViconDataStreamSDK_CPP" />
+  </export> 
+<!--cflags="-m32"-->
 </package>
 
 

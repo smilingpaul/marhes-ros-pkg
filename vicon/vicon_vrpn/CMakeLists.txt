@@ -16,8 +16,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-#link_directories(${PROJECT_SOURCE_DIR})
-
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
@@ -30,7 +28,3 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-rosbuild_add_executable(start_vicon_multicast src/startViconMulticast.cpp)
-#target_link_libraries(start_vicon_multicast ViconDataStreamSDK_CPP)
-rosbuild_add_executable(client_vicon_multicast src/clientViconMulticast.cpp)
-#target_link_libraries(client_vicon_multicast ViconDataStreamSDK_CPP)
