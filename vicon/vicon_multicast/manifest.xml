@@ -1,0 +1,16 @@
+<package>
+  <description brief="vicon_multicast">
+
+     vicon_multicast
+
+  </description>
+  <author>Titus Appel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vicon_multicast</url>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+
+</package>
+
+

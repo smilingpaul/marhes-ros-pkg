@@ -1,0 +1,11 @@
+<stack>
+  <description brief="vicon">vicon</description>
+  <author>Maintained by Titus Appel</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vicon</url>
+  <depend stack="ros" />
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+
+</stack>

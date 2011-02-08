@@ -1,0 +1,15 @@
+<stack>
+  <description brief="titus">titus</description>
+  <author>Maintained by Titus Appel</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/titus</url>
+  <depend stack="common_msgs" /> <!-- nav_msgs, sensor_msgs, geometry_msgs -->
+  <depend stack="image_common" /> <!-- image_transport -->
+  <depend stack="imu_drivers" /> <!-- microstrain_3dmgx2_imu -->
+  <depend stack="joystick_drivers" /> <!-- joy -->
+  <depend stack="ros" /> <!-- std_msgs, roscpp -->
+  <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
+  <depend stack="visualization_common" /> <!-- visualization_msgs -->
+
+</stack>

@@ -1,0 +1,17 @@
+<package>
+  <description brief="teleop_pioneer">
+
+     teleop_pioneer
+
+  </description>
+  <author>Titus Appel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/teleop_pioneer</url>
+  <depend package="roscpp"/>
+  <depend package="joy"/>
+  <depend package="geometry_msgs"/>
+
+</package>
+
+
