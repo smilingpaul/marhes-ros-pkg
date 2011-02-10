@@ -1,0 +1,3 @@
+host_addr: hello
+tf_ref_frame: /vicon_world
+subject_list: [Pioneer01,Pioneer02]
