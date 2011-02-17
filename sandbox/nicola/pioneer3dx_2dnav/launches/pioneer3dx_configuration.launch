@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="hokuyo_node" type="hokuyo_node" name="laser" output="screen">
+    <param name="frame_id" value="base_laser" />
+  </node>
+
+  <node pkg="p2os_driver" type="p2os" name="p2os_driver" output="screen">
+  </node>
+
+  <node pkg="pioneer_setup_tf" type="pioneer_setup_tf" name="pioneer_setup_tf" output="screen">
+  </node>
+
+</launch>
