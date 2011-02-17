@@ -1,0 +1,16 @@
+<package>
+  <description brief="pioneer_cmd_motor_state">
+
+     pioneer_cmd_motor_state
+
+  </description>
+  <author>marhes</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pioneer_cmd_motor_state</url>
+  <depend package="p2os_driver"/>
+  <depend package="roscpp"/>
+
+</package>
+
+

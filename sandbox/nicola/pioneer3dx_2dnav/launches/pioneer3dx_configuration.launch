@@ -9,4 +9,7 @@
   <node pkg="pioneer_setup_tf" type="pioneer_setup_tf" name="pioneer_setup_tf" output="screen">
   </node>
 
+  <node pkg="pioneer_cmd_motor_state" type="pioneer_cmd_motor_state" name="pioneer_cmd_motor_state" output="screen">
+  </node>
+
 </launch>
