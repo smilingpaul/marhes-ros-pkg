@@ -74,11 +74,11 @@ int main(int argc, char **argv)
   n_private.param("tf_ref_frame", tf_ref_frame, string("/vicon_world"));     
 
   // Check and get the subject list
-  if (!n.hasParam("subject_list"))
+  if (!n_private.hasParam("subject_list"))
     ROS_FATAL("Error: subject_list was not provided");
 
   XmlRpc::XmlRpcValue subject_list;
-  n.getParam("subject_list", subject_list);
+  n_private.getParam("subject_list", subject_list);
   ROS_ASSERT(subject_list.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
   num_subjects = subject_list.size();     // Get size of list
