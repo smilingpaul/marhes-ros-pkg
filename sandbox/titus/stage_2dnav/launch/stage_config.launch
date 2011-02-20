@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="stage" type="stageros" name="stage_node" args="$(find stage_2dnav)/world/willow-erratic.world" output="screen" />
+</launch>
