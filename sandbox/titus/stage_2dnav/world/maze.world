@@ -50,21 +50,21 @@ interval_sim 100  # simulation timestep in milliseconds
 
 window
 ( 
-  size [ 745.000 448.000 ] 
+  size [ 750.000 750.000 ] 
 
-  rotate [ 0.000 -1.560 ]
-  scale 28.806 
+  rotate [ 0.000 0.000 ]
+  scale 50 
 )
 
 # load an environment bitmap
 floorplan
 ( 
-  name "willow"
-  bitmap "willow-full.pgm"
-  size [54.0 58.7 0.5]
-  pose [ 0 0 0 90.000 ]
+  name "maze"
+  bitmap "maze.pgm"
+  size [10 10 0.5]
+  pose [ 5 5 0 0.000 ]
 )
 
 # throw in a robot
-erratic( pose [ 0 0 0 180.000 ] name "era" color "blue")
+erratic( pose [ 1 1 0 180.000 ] name "era" color "blue")
 #block( pose [ 10 10 0 180.000 ] color "red")
