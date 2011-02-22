@@ -33,8 +33,8 @@ int main(int argc, char **argv)
     mot_pub.publish(mot_state_msg);
 
     geometry_msgs::Twist vel_msg;
-    vel_msg.linear.x = 0.5;
-    vel_msg.angular.z = 2.0;
+    vel_msg.linear.x = 0.2;
+    vel_msg.angular.z = 1.0;
     vel_pub.publish(vel_msg);
 
     ros::spinOnce();
