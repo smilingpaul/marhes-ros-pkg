@@ -1,6 +1,6 @@
 <launch>
   <node pkg="hokuyo_node" type="hokuyo_node" name="laser" output="screen">
-    <param name="frame_id" value="base_laser" />
+    <param name="frame_id" value="/base_laser" />
   </node>
 
   <node pkg="p2os_driver" type="p2os" name="p2os_driver" output="screen">

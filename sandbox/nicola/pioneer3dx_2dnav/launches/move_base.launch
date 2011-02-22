@@ -8,6 +8,6 @@
     <rosparam file="$(find pioneer3dx_2dnav)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(find pioneer3dx_2dnav)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find pioneer3dx_2dnav)/config/global_costmap_params.yaml" command="load" />
-    <rosparam file="$(find pioneer3dx_2dnav)/config/base_local_planner_params.yaml" command="load" ns="TrajectoryPlannerROS" />
+    <rosparam file="$(find pioneer3dx_2dnav)/config/base_local_planner_params.yaml" command="load" />
   </node>
 </launch>
