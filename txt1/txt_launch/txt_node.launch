@@ -1,8 +1,8 @@
 <launch>
 	<!-- <node name="gpsd_client" pkg="gpsd_client" type="gpsd_client" 					
 		args="_host:=localhost _port:=4000" /> -->
-	<node name="imu_node" pkg="microstrain_3dmgx2_imu" type="imu_node"
-		args="_port:=/dev/ttyUSB1" />
+	<!--<node name="imu_node" pkg="microstrain_3dmgx2_imu" type="imu_node"
+		args="_port:=/dev/ttyUSB1" /> -->
 	<node name="txt1_node" pkg="txt_driver" type="txt_node" />
 	<!-- run the odom kalman filter -->
 </launch>
