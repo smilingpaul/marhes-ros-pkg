@@ -57,220 +57,6 @@ int Packet::Build(unsigned char *data, unsigned char dataSize)
 }
 
 /******************************************************************************
- * Name: 	BuildGpsFix
- * Inputs:	msg - The GPSFix msg from the subscriber
- * Outputs: int - 0 is success, 1 is failure
- * 
- * Description: This method assembles the GpsFix msg into a packet to send to 
- *              the TXT1.
- *        
- * 19 Byte Msg - CMD = 100 = 0x64
- * CMD | LATITUDE | LONGITUDE | HEMISPHERE | ALTITUDE | ALTPOS | DIRECTION
- *--------------------------------------------------------------------------
- * 1B  |    4B    |     4B    |    1B      |    4B    |    1B  |     4B
- ******************************************************************************/
-
-//int Packet::BuildGpsFix(const gps_common::GPSFix &msg)
-//{
-//
-//#ifdef USE_STRINGS
-//
-//	std::stringstream ss;
-//
-//	ss << CMD_GPS_FIX << msg.latitude << "," << msg.longitude << "," << \
-//			msg.altitude << "," << msg.track;
-//
-//	Build((unsigned char*)ss.str().c_str(), ss.str().length());
-//
-//	return 0;
-//
-//#else
-//
-//	char data[SIZE_GPS_FIX] = {0};
-//	char latNorth = 1;
-//	char longWest = 1;
-//	char altPos = 1;
-//	char* value;
-//
-//	data[0] = CMD_GPS_FIX;			        // Write the GPS_FIX command
-//
-//	if (msg.latitude < 0)                   // Pick hemisphere, Pos = North
-//	    latNorth = 0;
-//	value = FloatToBytes(msg.latitude,4);   // Convert lat float to 4 byte array
-//	memcpy( &data[1], value, 4 );
-//
-//	if (msg.longitude >= 0)                 // Pick hemisphere, Pos = East
-//	    longWest = 0;
-//	value = FloatToBytes(msg.longitude,4);  // Convert lat float to 4 byte array
-//	memcpy( &data[5], value, 4 );
-//
-//	data[9] = (latNorth << 4) | longWest;	// Write hemisphere byte
-//
-//	if(msg.altitude < 0)					// Write the altitude to data
-//		altPos = 0;
-//	value = FloatToBytes(msg.altitude, 4);
-//	memcpy( &data[10], value, 4);
-//
-//	data[14] = altPos;						// Write altitude sign
-//
-//	value = FloatToBytes(msg.track, 4); 	// Write the direction to data
-//	memcpy( &data[15], value, 4);
-//
-//	Build(data, SIZE_GPS_FIX);				// Add the header and checksum
-//	return(0);
-//
-//#endif
-//}
-
-/******************************************************************************
- * Name: 	BuildGpsStatus
- * Inputs:	msg - The GPSStatus msg from the subscriber
- * Outputs: int - 0 is success, 1 is failure
- *
- * Description: This method assembles the GpsStatus msg into a packet to send to
- *              the TXT1.
- *
- * 7 Byte Msg - CMD = 101 = 0x65
- * CMD | STATUS | SATS_VIS | SATS_USED
- *--------------------------------------
- * 1B  |   2B   |    2B    |    2B
- *
- * STATUS - NO_FIX=0 | FIX=1 | DGPS_FIX=3 | WAAS_FIX=5
- ******************************************************************************/
-
-//int Packet::BuildGpsStatus(const gps_common::GPSStatus &msg)
-//{
-//
-//#ifdef USE_STRINGS
-//
-//	std::stringstream ss;
-//
-//	ss << CMD_GPS_STATUS << msg.status << "," << msg.satellites_visible << \
-//			"," << msg.satellites_used;
-//
-//	Build((unsigned char*)ss.str().c_str(), ss.str().length());
-//
-//	return 0;
-//
-//#else
-//
-//	char data[SIZE_GPS_STATUS] = {0};
-//
-//	data[0] = CMD_GPS_STATUS;			    // Write the GPS_FIX command
-//
-//	data[1] = msg.status >> 8;				// Write the GPS Status
-//	data[2] = msg.status & 0xFF;
-//
-//	data[3] = msg.satellites_visible >> 8;	// Write the GPS Sats Visible
-//	data[4] = msg.satellites_visible & 0xFF;
-//
-//	data[5] = msg.satellites_used >> 8;		// Write the GPS Sats Used
-//	data[6] = msg.satellites_used & 0xFF;
-//
-//	Build(data, SIZE_GPS_STATUS);				// Add the header and checksum
-//	return(0);
-//
-//#endif
-//}
-
-/******************************************************************************
- * Name: 	BuildImuData
- * Inputs:	msg - The ImuData msg from the subscriber
- * Outputs: int - 0 is success, 1 is failure
- *
- * Description: This method assembles the ImuData msg into a packet to send to
- *              the TXT1.
- *
- * 31 Byte Msg - CMD = 102 = 0x66
- * CMD | ORI_X | ORI_Y | ORI_Z | ORI_W | ORI_SIGNS | LA_X | LA_Y | LA_Z | LA_POS
- *------------------------------------------------------------------------------
- * 1B  |  4B   |  4B   |  4B   |  4B   |    1B     |  4B  |  4B  |  4B  |   1B
- *
- * SIGNS Bytes are 1 if positive
- ******************************************************************************/
-
-int Packet::BuildImuData(const sensor_msgs::Imu &msg)
-{
-
-#ifdef USE_STRINGS
-	std::stringstream ss;
-    std::string str;
-    const char cmd[2] = {CMD_IMU_DATA, 0};
-    
-	ss << msg.orientation.x << "," << msg.orientation.y << "," \
-			<< msg.orientation.z << "," <<	msg.orientation.w << "," << \
-			msg.linear_acceleration.x <<  "," << msg.linear_acceleration.y << \
-			"," << msg.linear_acceleration.z;
-    
-    str.append(cmd, 1);
-    str.append(ss.str());
-    
-	Build((unsigned char*)str.c_str(), str.length());
-
-	return 0;
-
-#else
-
-	char data[SIZE_IMU_DATA] = {0};
-	char tempSign = 0xFF;
-	char* value;
-
-	data[0] = CMD_IMU_DATA;			        // Write the IMU DATA command
-
-	// Write the X Orientation bytes
-	if (msg.orientation.x < 0)              // Store the sign
-	    tempSign &= ~(1<<3);
-	value = FloatToBytes(msg.orientation.x,4);
-	memcpy( &data[1], value, 4 );
-
-	// Write the Y Orientation bytes
-	if (msg.orientation.y < 0)              // Store the sign
-	    tempSign &= ~(1<<2);
-	value = FloatToBytes(msg.orientation.y,4);
-	memcpy( &data[5], value, 4 );
-
-	// Write the Z Orientation bytes
-	if (msg.orientation.z < 0)              // Store the sign
-	    tempSign &= ~(1<<1);
-	value = FloatToBytes(msg.orientation.z,4);
-	memcpy( &data[9], value, 4 );
-
-	// Write the W Orientation bytes
-	if (msg.orientation.w < 0)              // Store the sign
-	    tempSign &= ~(1<<0);
-	value = FloatToBytes(msg.orientation.w,4);
-	memcpy( &data[13], value, 4 );
-
-	data[17] = tempSign;					// Write orientation sign
-	tempSign = 0xFF;
-
-	// Write the X Linear Acceleration bytes
-	if (msg.linear_acceleration.x < 0)   	// Store the sign
-	    tempSign &= ~(1<<2);
-	value = FloatToBytes(msg.linear_acceleration.x,4);
-	memcpy( &data[18], value, 4 );
-	Uart2TxArr(uint8_t *data, uint8_t numBytes)
-	// Write the Y Linear Acceleration bytes
-	if (msg.linear_acceleration.y < 0)   	// Store the sign
-		tempSign &= ~(1<<1);
-	value = FloatToBytes(msg.linear_acceleration.y,4);
-	memcpy( &data[22], value, 4 );
-
-	// Write the Z Linear Acceleration bytes
-	if (msg.linear_acceleration.z < 0)   	// Store the sign
-		tempSign &= ~(1<<0);
-	value = FloatToBytes(msg.linear_acceleration.z,4);
-	memcpy( &data[26], value, 4 );
-
-	data[30] = tempSign;
-
-	Build(data, SIZE_IMU_DATA);		// Add the header and checksum
-	return(0);
-
-#endif
-}
-
-/******************************************************************************
  * Name: 	BuildCmdVel
  * Inputs:	msg - The Cmd Vel msg from the subscriber
  * Outputs: int - 0 is success, 1 is failure
@@ -460,12 +246,12 @@ void Packet::Receive( Serial::Serial * port )
 
 void Packet::ProcessData()
 {
-	double xpos, ypos, theta, linvel, angvel;
+	double xpos, ypos, theta, linvel, angvel, cell1, cell2, cell3;
 
 	switch(packet[3])
 	{
-		case CMD_ENC_ODOM:
-			if (packetSize - 5 != SIZE_ENC_ODOM)
+		case CMD_ODOM_ENC:
+			if (packetSize - 5 != SIZE_ODOM_ENC)
 				break;
 
 			xpos = (double)((packet[4] << 24) + (packet[5] << 16) + (packet[6] << 8) + packet[7]) / 1000;
@@ -475,17 +261,20 @@ void Packet::ProcessData()
 			angvel = (double)((packet[20] << 24) + (packet[21] << 16) + (packet[22] << 8) + packet[23]) / 1000;
 
 			p->pubOdom(xpos, ypos, theta, linvel, angvel);
+			break;
+		case CMD_BATTERY:
+			ROS_INFO("%d,%d,%d,%d,%d,%d",packet[4],packet[5],packet[6],packet[7],packet[8],packet[9]);
 
-//			ROS_INFO("Packet: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-//					packet[0],packet[1],packet[2],packet[3],packet[4],packet[5],
-//					packet[6],packet[7],packet[8],packet[9],packet[10],packet[11],packet[12],
-//					packet[13],packet[14],packet[15],packet[16],packet[17],packet[18],packet[19],packet[20],
-//					packet[21],packet[22],packet[23],packet[24],packet[25]);
-//			ROS_INFO("xpos: %f", xpos);
-//			ROS_INFO("ypos: %f", ypos);
-//			ROS_INFO("theta: %f", theta);
-//			ROS_INFO("linvel: %f", linvel);
-//			ROS_INFO("angvel: %f", angvel);
+			if (packetSize - 5 != SIZE_BATTERY)
+				break;
+
+			cell1 = (double)((packet[4] << 8) + packet[5]) / 1000;
+			cell2 = (double)((packet[6] << 8) + packet[7]) / 1000;
+			cell3 = (double)((packet[8] << 8) + packet[9]) / 1000;
+
+
+
+			p->pubBattery(cell1, cell2, cell3);
 			break;
 		default:
 

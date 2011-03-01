@@ -60,11 +60,11 @@ window
 floorplan
 ( 
   name "maze"
-  bitmap "maze.pgm"
+  bitmap "../map.pgm"
   size [10 10 0.5]
   pose [ 5 5 0 0.000 ]
 )
 
 # throw in a robot
-erratic( pose [ 1 1 0 180.000 ] name "era" color "blue")
+erratic( pose [ 3 1 0 180.000 ] name "era" color "blue")
 #block( pose [ 10 10 0 180.000 ] color "red")
