@@ -4,7 +4,7 @@
 #include "ros/ros.h"
 #include "txt_driver/packet.h"
 #include "txt_driver/serial.h"
-#include "txt_driver/battery.h"
+#include "txt_driver/Battery.h"
 
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/String.h"
@@ -18,10 +18,10 @@ class TXT1
 public:
 	geometry_msgs::Twist cmdVelMsg;
 	nav_msgs::Odometry odomMsg;
-    geometry_msgs::TransformStamped odomTransMsg;
-    geometry_msgs::Quaternion odomQuat;
-    txt_driver::battery batteryMsg;
-    tf::TransformBroadcaster odomBroadcaster;
+  geometry_msgs::TransformStamped odomTransMsg;
+  geometry_msgs::Quaternion odomQuat;
+  txt_driver::Battery batteryMsg;
+  tf::TransformBroadcaster odomBroadcaster;
 
 	Serial::Serial * mySerial;
 

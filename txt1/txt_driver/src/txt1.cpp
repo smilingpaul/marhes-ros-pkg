@@ -11,7 +11,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 
 	cmd_vel_sub = n.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
 	odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 50);
-	battery_pub = n.advertise<txt_driver::battery>("/battery", 50);
+	battery_pub = n.advertise<txt_driver::Battery>("/battery", 50);
 	cmd_vel_tmr = n.createTimer(ros::Duration(0.05), &TXT1::cmdVelTmrCB, this);
 
 	mySerial = new Serial(port, Serial::BAUD_115200, Serial::SIZE_8,
