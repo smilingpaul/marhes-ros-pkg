@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="vicon_vrpn" type="vicon_vrpn_test" name="vicon_vrpn">
+  <node pkg="vicon_vrpn" type="vicon_vrpn" name="vicon_vrpn">
     <rosparam file="$(find vicon_vrpn)/config/config.yaml" command="load" />
   </node>
 </launch>
