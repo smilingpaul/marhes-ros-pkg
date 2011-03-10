@@ -1,21 +1,37 @@
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h"
 #include "tf/transform_listener.h"
+#include <math.h>
 
 using namespace std;
 
 class TFToOdom
 {
 public:
-  TFToOdom(ros::NodeHandle n, string frame, string odom_frame, string odom_topic):
-    n_(n), frame_(frame), odom_frame_(odom_frame), odom_topic_(odom_topic)
+  TFToOdom(void)
   {
-    odom_pub_ = n_.advertise<nav_msgs::Odometry>(odom_topic_.c_str(), 50); 
+	  ros::NodeHandle n;
+    ros::NodeHandle n_private("~");
+
+    n_private.param("odom_frame", odom_frame_, string("/odom"));
+    n_private.param("odom_topic", odom_topic_, string("/vo"));
+    n_private.param("freq", freq_, 50.0);
+
+    if (!n_private.hasParam("frame"))
+      ROS_FATAL("Error: Parameter \"frame\" was not provided");
+    else
+      n_private.getParam("frame", frame_);
+
+    ROS_INFO(frame_.c_str());
+
+    odom_pub_ = n.advertise<nav_msgs::Odometry>(odom_topic_.c_str(), 50); 
+    timer_ = n.createTimer(ros::Duration(1/freq_), &TFToOdom::UpdateOdom, this);    
   }
 
-  void UpdateOdom(void)
+  void UpdateOdom(const ros::TimerEvent& event)
   {
     tf::StampedTransform transform;
+    double vx, vtheta, dt;
 
     try
     {
@@ -41,11 +57,23 @@ public:
     odom_msg.pose.pose.orientation.z = transform.getRotation().z();
     odom_msg.pose.pose.orientation.w = transform.getRotation().w();
 
+    odom_msg.pose.covariance[0] = 4.5;
+    odom_msg.pose.covariance[7] = 4.5;
+    odom_msg.pose.covariance[14] = 99999;
+    odom_msg.pose.covariance[21] = 99999;
+    odom_msg.pose.covariance[28] = 99999;
+    odom_msg.pose.covariance[35] = 0.75;
+
+    dt = (transform.stamp_ - last_transform_.stamp_).toSec();
+    vx = sqrt(pow(transform.getOrigin().x() - last_transform_.getOrigin().x(), 2) + 
+      pow(transform.getOrigin().y() - last_transform_.getOrigin().y(), 2)) / dt;
+    vtheta = (tf::getYaw(transform.getRotation()) - tf::getYaw(last_transform_.getRotation())) / dt;
+
     //set the velocity
-//    odom_msg.twist.twist.linear.x = vx;
-//    odom_msg.twist.twist.linear.y = 0.0;
-//    odom_msg.twist.twist.linear.z = 0.0;
-//    odom_msg.twist.twist.angular.z = vtheta;
+    odom_msg.twist.twist.linear.x = vx;
+    odom_msg.twist.twist.linear.y = 0.0;
+    odom_msg.twist.twist.linear.z = 0.0;
+    odom_msg.twist.twist.angular.z = vtheta;
 
     //publish the message
     odom_pub_.publish(odom_msg);
@@ -55,33 +83,19 @@ public:
 private:
   ros::NodeHandle n_;
   ros::Publisher odom_pub_;
+  ros::Timer timer_;
   tf::TransformListener listener_;
   tf::StampedTransform last_transform_;
   string frame_, odom_frame_, odom_topic_;
+  double freq_;
 };
 
 int main(int argc, char **argv)
 {
   // Initial ROS setup
 	ros::init(argc, argv, "vicon_tf_to_odom");
-	ros::NodeHandle n;
-  ros::NodeHandle n_private("~");
-  string frame, odom_frame, odom_topic;
-  double freq;
 
-  n_private.param("frame", frame, string("/Pioneer01"));
-  n_private.param("odom_frame", odom_frame, string("/odom"));
-  n_private.param("odom_topic", odom_topic, string("/vo"));
-  n_private.param("freq", freq, 200.0);
+  TFToOdom* translater = new TFToOdom();
 
-  TFToOdom* translater = new TFToOdom(n, frame, odom_frame, odom_topic);
-  ros::Rate loop_rate(freq);
-
-  while(ros::ok())
-  {
-    translater->UpdateOdom();
-
-    ros::spinOnce();
-    loop_rate.sleep();
-  }  
+  ros::spin();
 }

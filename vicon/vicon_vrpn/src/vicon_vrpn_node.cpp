@@ -52,7 +52,7 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
   transform.setOrigin(tf::Vector3(t.pos[0] / 1000, t.pos[1] / 1000, t.pos[2] / 1000));
   transform.setRotation(tf::Quaternion(t.quat[0], t.quat[1], t.quat[2], t.quat[3]));
   tf::StampedTransform stampTransform(transform, time_now, 
-        t_data->t_ref_frame, t_data->t_subject_frame);
+        t_data->t_ref_frame, t_data->t_subject_frame + "/vicon");
   tf_broadcaster.sendTransform(stampTransform);
 }
 
