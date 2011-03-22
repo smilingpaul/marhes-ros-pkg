@@ -1,0 +1,19 @@
+<package>
+  <description brief="stage_2dnav">
+
+     stage_2dnav
+
+  </description>
+  <author>Titus</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/stage_2dnav</url>
+  <depend package="roscpp"/>
+  <depend package="move_base"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+  <depend package="nav_msgs"/>
+
+</package>
+
+

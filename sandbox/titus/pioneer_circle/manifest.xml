@@ -1,0 +1,18 @@
+<package>
+  <description brief="pioneer_circle">
+
+     pioneer_circle
+
+  </description>
+  <author>marhes</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pioneer_circle</url>
+  <depend package="roscpp"/>
+  <depend package="p2os_driver"/>
+  <depend package="geometry_msgs"/>
+  <depend package="nav_msgs"/>
+
+</package>
+
+

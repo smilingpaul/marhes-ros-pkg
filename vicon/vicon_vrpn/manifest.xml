@@ -1,0 +1,16 @@
+<package>
+  <description brief="vicon_vrpn">
+
+     vicon_vrpn
+
+  </description>
+  <author>marhes</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/vicon_vrpn</url>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+
+</package>
+
+
