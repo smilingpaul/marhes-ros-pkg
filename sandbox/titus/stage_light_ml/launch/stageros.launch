@@ -1,0 +1,3 @@
+<launch>
+  <node name="stageros_extensions" pkg="stage_extensions" type="stageros" args="$(find stage_light_ml)/world/simulation.world" />
+</launch>

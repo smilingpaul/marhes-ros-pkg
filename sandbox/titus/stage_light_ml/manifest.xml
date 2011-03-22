@@ -1,0 +1,19 @@
+<package>
+  <description brief="stage_light_ml">
+
+     stage_light_ml
+
+  </description>
+  <author>Titus</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/stage_light_ml</url>
+  <depend package="roscpp"/>
+  <depend package="nav_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="tf"/>
+  <depend package="stage_msgs"/>
+
+</package>
+
+
