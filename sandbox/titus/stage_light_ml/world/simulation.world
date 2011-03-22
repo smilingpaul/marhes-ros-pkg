@@ -39,6 +39,17 @@ floorplan
   bitmap "square.pgm"
 )
 
+define topurg laser
+(
+
+  range_max 30.0
+  fov 270.25
+  samples 1081
+  # generic model properties
+  color "black"
+  size [ 0.05 0.05 0.1 ]
+)
+
 pioneer2dx
 (
   name "pr2"
@@ -63,5 +74,5 @@ pioneer2dx
 )
 
 #zone( pose [-25 22 0 66] size [1 1 0] color "green")
-puck( pose [-10 10 0 0 ] color "orange" fiducial_return 1)
+puck( pose [-10 10 0 0 ] color "orange")
 
