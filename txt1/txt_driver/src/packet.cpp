@@ -89,22 +89,46 @@ int Packet::BuildCmdVel(const geometry_msgs::Twist &msg)
 	return(0);
 }
 
-unsigned char* Packet::FloatToBytes(float value, unsigned char chars)
+int Packet::BuildCombOdom(const nav_msgs::Odometry &msg)
 {
-	unsigned long val;
-    float temp = value;
-    unsigned char *ret = new unsigned char[chars];
-    unsigned char loop;
+	unsigned char data[SIZE_ODOM_COMB] = {0};
+	int temp;
 
-    if (temp < 0)                           // make positive
-	    temp = -temp;
+	data[0] = CMD_ODOM_COMB;
 
-    val = (unsigned long)(temp * DIV);      // convert to 4 byte long
+	temp = (int)(msg.pose.pose.position.x * 1000);
+	data[1] = (unsigned char)(temp >> 24);
+	data[2] = (unsigned char)(temp >> 16);
+	data[3] = (unsigned char)(temp >> 8);
+	data[4] = (unsigned char)(temp & 0x000000FF);
 
-    for ( loop = 0; loop < chars; loop++)  // Parse out bytes
-        ret[loop] = (unsigned char)(val >> (8*(chars-loop-1)));
+	temp = (int)(msg.pose.pose.position.y * 1000);
+	data[5] = (unsigned char)(temp >> 24);
+	data[6] = (unsigned char)(temp >> 16);
+	data[7] = (unsigned char)(temp >> 8);
+	data[8] = (unsigned char)(temp & 0x000000FF);
 
-    return ret;
+	temp = (int)(tf::getYaw(msg.pose.pose.orientation) * 1000);
+	data[9] = (unsigned char)(temp >> 24);
+	data[10] = (unsigned char)(temp >> 16);
+	data[11] = (unsigned char)(temp >> 8);
+	data[12] = (unsigned char)(temp & 0x000000FF);
+
+	temp = (int)(msg.twist.twist.linear.x * 1000);
+	data[13] = (unsigned char)(temp >> 24);
+	data[14] = (unsigned char)(temp >> 16);
+	data[15] = (unsigned char)(temp >> 8);
+	data[16] = (unsigned char)(temp & 0x000000FF);
+
+	temp = (int)(msg.twist.twist.angular.z * 1000);
+	data[17] = (unsigned char)(temp >> 24);
+	data[18] = (unsigned char)(temp >> 16);
+	data[19] = (unsigned char)(temp >> 8);
+	data[20] = (unsigned char)(temp & 0x000000FF);
+
+	Build(data, SIZE_ODOM_COMB);
+
+	return(0);
 }
 
 /******************************************************************************

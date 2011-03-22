@@ -5,6 +5,7 @@
 #include "txt_driver/serial.h"
 #include "txt_driver/txt1.h"
 #include "geometry_msgs/Twist.h"
+#include "nav_msgs/Odometry.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -12,11 +13,6 @@
 #include <sstream>
 
 #define MAX_PACKET_SIZE		255
-
-// Divisor for making floats a hexadecimal representation
-#define DIV_NUM		        32768000		
-#define DIV_DEN				1000
-#define DIV					(DIV_NUM / DIV_DEN)
 
 class Packet
 {
@@ -31,7 +27,6 @@ class Packet
 		typedef enum {SIZE_VEL = 5, SIZE_ODOM_ENC = 21, SIZE_ODOM_COMB = 21,
 			SIZE_BATTERY = 7} SIZES;
 
-		unsigned char* FloatToBytes(float value, unsigned char chars);
 		int CalcChkSum();
 		bool Check();
 		void ProcessData();
@@ -40,6 +35,7 @@ class Packet
 		virtual ~Packet();
 		int Build(unsigned char *data, unsigned char dataSize);
         int BuildCmdVel(const geometry_msgs::Twist &msg);
+        int BuildCombOdom(const nav_msgs::Odometry &msg);
         void Send( Serial::Serial* port );
         void Receive( Serial::Serial * port );
         void Print();
