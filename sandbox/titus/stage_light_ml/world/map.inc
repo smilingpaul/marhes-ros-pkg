@@ -40,7 +40,7 @@ define puck model(
   size [ 0.5 0.5 0.5 ]
   obstacle_return 1
   gripper_return 1
-  gui_move 0
+  gui_move 1
   gui_nose 0
   gui_outline 1
 #  fiducial_return 2

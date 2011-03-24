@@ -15,7 +15,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	battery_pub = n.advertise<txt_driver::Battery>("/battery", 50);
 	cmd_vel_tmr = n.createTimer(ros::Duration(0.05), &TXT1::cmdVelTmrCB, this);
 
-	mySerial = new Serial(port, Serial::BAUD_115200, Serial::SIZE_8,
+	mySerial = new Serial(port, Serial::BAUD_57600, Serial::SIZE_8,
 			Serial::NONE, Serial::ONE);
 
  	if (mySerial->isOpen)
