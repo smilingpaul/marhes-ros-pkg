@@ -1,0 +1,14 @@
+<launch>
+
+  <!-- Launch the VICON Node with its configuration file -->
+  <include file="$(find vicon_vrpn)/launch/vicon_vrpn.launch" />
+  
+  <!-- Launch the tf to odom pkg to get velocities -->
+  <node name="vicon_tf_to_odom" pkg="vicon_vrpn" type="vicon_tf_to_odom">
+    <param name="frame" value="/txt01/vicon" />
+  </node>
+  
+  <!-- Launch the txt node with ekf -->
+  <include file="$(find txt_launch)/txt_node.launch" />
+
+</launch>

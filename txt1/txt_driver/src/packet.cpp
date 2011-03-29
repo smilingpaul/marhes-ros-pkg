@@ -77,11 +77,11 @@ int Packet::BuildCmdVel(const geometry_msgs::Twist &msg)
 
 	data[0] = CMD_VEL;			        	// Write the VEL command
 
-	vel = (short)msg.linear.x;		// Write the linear velocity
+	vel = (short)(msg.linear.x * 1000);		// Write the linear velocity
 	data[1] = (unsigned char)(vel >> 8);
 	data[2] = (unsigned char)(vel & 0x00FF);
 
-	vel = (short)msg.angular.z;	// Write the angular velocity
+	vel = (short)(msg.angular.z * 1000);	// Write the angular velocity
 	data[3] = (unsigned char)(vel >> 8);
 	data[4] = (unsigned char)(vel & 0x00FF);
 
