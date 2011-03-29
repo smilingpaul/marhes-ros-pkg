@@ -38,7 +38,7 @@ define zone model
 # a block for gripping
 define puck model(
   size [ 0.5 0.5 0.5 ]
-  obstacle_return 1
+  obstacle_return 0
   gripper_return 1
   gui_move 1
   gui_nose 0
