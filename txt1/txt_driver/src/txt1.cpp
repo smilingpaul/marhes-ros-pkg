@@ -10,10 +10,12 @@ TXT1::TXT1(ros::NodeHandle nh)
 	n_private.param("port", port, def);
 
 	cmd_vel_sub = n.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
-	comb_odom_sub = n.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
+//	comb_odom_sub = n.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
+	comb_odom_sub = n.subscribe("/vo", 1000, &TXT1::combOdomCB, this);
 	odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 50);
 	battery_pub = n.advertise<txt_driver::Battery>("/battery", 50);
-	cmd_vel_tmr = n.createTimer(ros::Duration(0.05), &TXT1::cmdVelTmrCB, this);
+	cmd_vel_tmr = n.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
+	comb_odom_tmr = n.createTimer(ros::Duration(0.05), &TXT1::combOdomTmrCB, this);
 
 	mySerial = new Serial(port, Serial::BAUD_57600, Serial::SIZE_8,
 			Serial::NONE, Serial::ONE);
@@ -53,25 +55,29 @@ void TXT1::cmdVelTmrCB(const ros::TimerEvent& e)
 	packet.Send(mySerial);
 }
 
-void TXT1::combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
+void TXT1::combOdomTmrCB(const ros::TimerEvent& e)
 {
-	ros::Duration dt = msg->header.stamp - combPoseMsg.header.stamp;
-	double vx = sqrt(pow(msg->pose.pose.position.x -
-		  combPoseMsg.pose.pose.position.x, 2) +
-	      pow(msg->pose.pose.position.y - combPoseMsg.pose.pose.position.y, 2))
-	      / dt.toSec();
-	double vt = (tf::getYaw(msg->pose.pose.orientation) -
-			tf::getYaw(combPoseMsg.pose.pose.orientation)) / dt.toSec();
-
-	combPoseMsg = *msg;
-	combOdomMsg.header.stamp = ros::Time::now();
-	combOdomMsg.pose.pose = combPoseMsg.pose.pose;
-	combOdomMsg.twist.twist.linear.x = vx;
-	combOdomMsg.twist.twist.angular.z = vt;
-
 	Packet packet;
 	packet.BuildCombOdom(combOdomMsg);
 	packet.Send(mySerial);
+}
+//void TXT1::combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
+void TXT1::combOdomCB(const nav_msgs::OdometryConstPtr &msg)
+{
+	combOdomMsg = *msg;
+//	ros::Duration dt = msg->header.stamp - combPoseMsg.header.stamp;
+//	double vx = sqrt(pow(msg->pose.pose.position.x -
+//		  combPoseMsg.pose.pose.position.x, 2) +
+//	      pow(msg->pose.pose.position.y - combPoseMsg.pose.pose.position.y, 2))
+//	      / dt.toSec();
+//	double vt = (tf::getYaw(msg->pose.pose.orientation) -
+//			tf::getYaw(combPoseMsg.pose.pose.orientation)) / dt.toSec();
+//
+//	combPoseMsg = *msg;
+//	combOdomMsg.header.stamp = ros::Time::now();
+//	combOdomMsg.pose.pose = combPoseMsg.pose.pose;
+//	combOdomMsg.twist.twist.linear.x = vx;
+//	combOdomMsg.twist.twist.angular.z = vt;
 }
 
 void TXT1::pubOdom(double x, double y, double theta, double vx, double vtheta)
