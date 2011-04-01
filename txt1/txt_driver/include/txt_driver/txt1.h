@@ -39,12 +39,15 @@ private:
 	ros::Publisher odom_pub;
 	ros::Publisher battery_pub;
 	ros::Timer cmd_vel_tmr;
+	ros::Timer comb_odom_tmr;
 
 	ros::NodeHandle n;
 	std::string port;
 
 	void cmdVelCB(const geometry_msgs::TwistConstPtr& msg);
 	void cmdVelTmrCB(const ros::TimerEvent& e);
-	void combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
+//	void combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
+	void combOdomCB(const nav_msgs::OdometryConstPtr &msg);
+	void combOdomTmrCB(const ros::TimerEvent& e);
 };
 #endif
