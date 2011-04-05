@@ -10,6 +10,7 @@
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "std_msgs/String.h"
 #include "tf/transform_broadcaster.h"
+#include "tf/tf.h"
 #include "nav_msgs/Odometry.h"
 
 #include <sstream>
