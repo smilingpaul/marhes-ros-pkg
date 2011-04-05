@@ -17,6 +17,12 @@ TXT1::TXT1(ros::NodeHandle nh)
 	cmd_vel_tmr = n.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
 	comb_odom_tmr = n.createTimer(ros::Duration(0.05), &TXT1::combOdomTmrCB, this);
 
+	// Added for testing
+	combOdomMsg.header.stamp = ros::Time::now();
+	combOdomMsg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
+//	combOdomMsg.twist.twist.linear.x = 0.0;
+//	combOdomMsg.twist.twist.angular.z = 0.0;
+
 	mySerial = new Serial(port, Serial::BAUD_57600, Serial::SIZE_8,
 			Serial::NONE, Serial::ONE);
 
