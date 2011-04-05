@@ -1,0 +1,16 @@
+<launch>
+
+  <node name="move_robot" pkg="stage_light_ml" type="move_test"/>
+
+  <node name="learner" pkg="stage_light_ml" type="experiment" output="screen">
+    <param name="num_reps" value="100" />
+    <param name="freq" value="1.0" />
+    <param name="start_x" value="-7.5" />
+    <param name="start_y" value="7.5" />
+    <param name="goal_radius" value="1.0" />
+    <param name="learn" value="true" />
+    <param name="learning_rate" value="0.3" />
+    <param name="discount_factor" value="0.5" />
+    <param name="max_explore" value="5" />
+  </node>
+</launch>

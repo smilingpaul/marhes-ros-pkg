@@ -53,7 +53,7 @@ define topurg laser
 pioneer2dx
 (
   name "pr2"
-  pose [ -5 5 0 180.000 ]
+  pose [ -7.5 7.5 0 135.000 ]
 
   sicklaser(samples 1081 range_max 30.0 fov 270.25)
 
@@ -66,7 +66,7 @@ pioneer2dx
 
   gripper(pose [0.25 0 -0.22 0] obstacle_return 0)
 
-  blobfinder(colors_count 3 colors [ "red" "purple" "orange" ])
+  blobfinder(colors_count 3 colors [ "red" "purple" "orange" ] image [80 60])
   fiducial(range_max 8 range_max_id 5 pose [0 0 -0.2 0] )
   
   fiducial_return 0

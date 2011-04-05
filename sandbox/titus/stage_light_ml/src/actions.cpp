@@ -4,6 +4,7 @@ Actions::Actions(ros::NodeHandle nh)
 {
   n_ = nh;
   vel_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+  num_actions_ = 6;
 }
   
 void Actions::Move(moveType type)
@@ -13,28 +14,28 @@ void Actions::Move(moveType type)
   switch(type)
   {
     case LeftForward:
-      vel_msg.linear.x = 0.2;
-      vel_msg.angular.z = 0.2;
+      vel_msg.linear.x = 0.5;
+      vel_msg.angular.z = 0.5;
       break;
     case StraightForward:
-      vel_msg.linear.x = 0.2;
+      vel_msg.linear.x = 0.5;
       vel_msg.angular.z = 0;
       break;
     case RightForward:
-      vel_msg.linear.x = 0.2;
-      vel_msg.angular.z = -0.2;
+      vel_msg.linear.x = 0.5;
+      vel_msg.angular.z = -0.5;
       break;
     case LeftBackward:
-      vel_msg.linear.x = -0.2;
-      vel_msg.angular.z = 0.2;
+      vel_msg.linear.x = -0.5;
+      vel_msg.angular.z = 0.5;
       break;
     case StraightBackward:
-      vel_msg.linear.x = -0.2;
+      vel_msg.linear.x = -0.5;
       vel_msg.angular.z = 0;
       break;
     case RightBackward:
-      vel_msg.linear.x = -0.2;
-      vel_msg.angular.z = -0.2;
+      vel_msg.linear.x = -0.5;
+      vel_msg.angular.z = -0.5;
       break;
     default:
       vel_msg.linear.x = 0;
@@ -45,24 +46,31 @@ void Actions::Move(moveType type)
   vel_pub_.publish(vel_msg);
 }
 
-int main(int argc, char **argv) 
+int Actions::GetNumActions(void)
 {
-	ros::init(argc, argv, "actions_test");
-	ros::NodeHandle n;
-	int i = 0;
-
-  Actions* r = new Actions(n);
-  ros::Rate loop_rate(10);
-  
-  while(ros::ok())
-  {
-    r->Move((Actions::moveType)i);  
-    i++;
-    if (i > 5)
-      i = 0;    
-        
-    ros::spinOnce();
-    loop_rate.sleep();  
-  }
+	return num_actions_;
 }
+
+//int main(int argc, char **argv)
+//{
+//  ros::init(argc, argv, "actions_test");
+//  ros::NodeHandle n;
+//  int i = 0;
+//
+//  Actions* r = new Actions(n);
+//  ros::Rate loop_rate(1);
+//
+//  while(ros::ok())
+//  {
+//    r->Move((Actions::moveType)i);
+//    i++;
+//    if (i > 5)
+//      i = 0;
+//
+//    ros::spinOnce();
+//    loop_rate.sleep();
+//  }
+//
+//  return 0;
+//}
 	
