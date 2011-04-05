@@ -12,10 +12,12 @@ public:
 
   Actions(ros::NodeHandle nh);
   void Move(moveType type);
+  int GetNumActions(void);
   
 private:  
   ros::NodeHandle n_;
   ros::Publisher vel_pub_;
+  int num_actions_;
 };
 
 #endif

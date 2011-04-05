@@ -5,6 +5,7 @@
 #include "nav_msgs/Odometry.h"
 #include "stage_light_ml/move_robot.h"
 #include "tf/tf.h"
+#include "std_msgs/Bool.h"
 #include <math.h>
 
 class MovePotField
@@ -16,19 +17,21 @@ public:
     odom_sub_ = n.subscribe("/odom", 10, &MovePotField::odom_cb, this);
     move_srv_ = n_.advertiseService("/move_robot", &MovePotField::move_cb, this);
     laser_sub_ = n_.subscribe<sensor_msgs::LaserScan>("/scan_laser", 10, &MovePotField::laser_cb, this);
+    bool_pub_ = n_.advertise<std_msgs::Bool>("/move_done", 1);
     vel_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     //cmd_moving_ = true;
     vx_max_ = 1.5;
     vt_max_ = 1.0;
     kgoal_ = 0.1;
     kobs_ = 0.5;
-    kv_ = 0.5;
+    kv_ = 1;
     kt_ = 0.5;
     resolution_ = 0.5;
-    dist_limit_ = 0.5;
+    dist_limit_ = 1.0;
   }
 private:
   ros::NodeHandle n_;
+  ros::Publisher bool_pub_;
   ros::Subscriber odom_sub_;
   ros::Publisher vel_pub_;
   ros::ServiceServer move_srv_;
@@ -138,7 +141,7 @@ private:
 //		}
 	  }
 
-	  ROS_INFO("0: %f, 1: %f, 2: %f, 3: %f, 4: %f, 5: %f, 6: %f, 7: %f", v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
+	  //ROS_INFO("0: %f, 1: %f, 2: %f, 3: %f, 4: %f, 5: %f, 6: %f, 7: %f", v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 
 	  // Calculate the sobel gradient
 	  dx = -0.25 * (-(v[0] + 2 * v[3] + v[5]) + v[2] + 2 * v[4] + v[7]);
@@ -155,7 +158,12 @@ private:
 	  vel_pub_.publish(vel_msg);
 
 	  if (dist(odom_.pose.pose.position.x, odom_.pose.pose.position.y, goal_x_, goal_y_) < dist_limit_)
+	  {
+		  std_msgs::Bool bool_msg;
+		  bool_msg.data = true;
 		  cmd_moving_ = false;
+		  bool_pub_.publish(bool_msg);
+	  }
 	}
   }
 
