@@ -3,39 +3,42 @@
 
 TXT1::TXT1(ros::NodeHandle nh)
 {
-	n = nh;
+	n_ = nh;
 	ros::NodeHandle n_private("~");
 
 	std::string def = "/dev/ttyUSB0";
-	n_private.param("port", port, def);
+	n_private.param("port", port_, def);
+	COMB_ODOM_CNT_LIMIT_ = 2;
 
-	cmd_vel_sub = n.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
-//	comb_odom_sub = n.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
-	comb_odom_sub = n.subscribe("/vo", 1000, &TXT1::combOdomCB, this);
-	odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 50);
-	battery_pub = n.advertise<txt_driver::Battery>("/battery", 50);
-	cmd_vel_tmr = n.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
-	comb_odom_tmr = n.createTimer(ros::Duration(0.05), &TXT1::combOdomTmrCB, this);
+	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
+//	comb_odom_sub_ = n_.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
+	comb_odom_sub_ = n_.subscribe("/vo", 1000, &TXT1::combOdomCB, this);
+
+	cmd_vel_tmr_ = n_.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
+	comb_odom_tmr_ = n_.createTimer(ros::Duration(0.05), &TXT1::combOdomTmrCB, this);
+
+	odom_pub_ = n_.advertise<nav_msgs::Odometry>("/odom", 50);
+	battery_pub_ = n_.advertise<txt_driver::Battery>("/battery", 50);
 
 	// Added for testing
-	combOdomMsg.header.stamp = ros::Time::now();
-	combOdomMsg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
-//	combOdomMsg.twist.twist.linear.x = 0.0;
-//	combOdomMsg.twist.twist.angular.z = 0.0;
+	comb_odom_msg_.header.stamp = ros::Time::now();
+	comb_odom_msg_.pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
+//	comb_odom_msg_.twist.twist.linear.x = 0.0;
+//	comb_odom_msg_.twist.twist.angular.z = 0.0;
 
-	mySerial = new Serial(port, Serial::BAUD_57600, Serial::SIZE_8,
+	my_serial_ = new Serial(port_, Serial::BAUD_57600, Serial::SIZE_8,
 			Serial::NONE, Serial::ONE);
 
- 	if (mySerial->isOpen)
- 		ROS_INFO("Serial Port: %s is Opened.", port.c_str());
+ 	if (my_serial_->isOpen)
+ 		ROS_INFO("Serial Port: %s is Opened.", port_.c_str());
  	else
- 		ROS_ERROR("Failed to open port: %s.", port.c_str());
+ 		ROS_ERROR("Failed to open port: %s.", port_.c_str());
 }
 
 TXT1::~TXT1()
 {
-  	mySerial->Close();
-  	delete mySerial;
+  	my_serial_->Close();
+  	delete my_serial_;
 }
 
 /******************************************************************************
@@ -51,39 +54,45 @@ TXT1::~TXT1()
 
 void TXT1::cmdVelCB(const geometry_msgs::TwistConstPtr &msg)
 {
-	cmdVelMsg = *msg;
+	cmd_vel_msg_ = *msg;
 }
 
 void TXT1::cmdVelTmrCB(const ros::TimerEvent& e)
 {
 	Packet packet;
-	packet.BuildCmdVel(cmdVelMsg);
-	packet.Send(mySerial);
+	packet.BuildCmdVel(cmd_vel_msg_);
+	packet.Send(my_serial_);
 }
 
 void TXT1::combOdomTmrCB(const ros::TimerEvent& e)
 {
-	Packet packet;
-	packet.BuildCombOdom(combOdomMsg);
-	packet.Send(mySerial);
+	if (comb_odom_cnt_ > COMB_ODOM_CNT_LIMIT_)
+	{
+		Packet packet;
+		packet.BuildCombOdom(comb_odom_msg_);
+		packet.Send(my_serial_);
+	}
+
+	comb_odom_cnt_ = 0;
 }
 //void TXT1::combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 void TXT1::combOdomCB(const nav_msgs::OdometryConstPtr &msg)
 {
-	combOdomMsg = *msg;
-//	ros::Duration dt = msg->header.stamp - combPoseMsg.header.stamp;
+	comb_odom_cnt_++;
+	comb_odom_msg_ = *msg;
+//	ros::Duration dt = msg->header.stamp - comb_pose_msg_.header.stamp;
 //	double vx = sqrt(pow(msg->pose.pose.position.x -
-//		  combPoseMsg.pose.pose.position.x, 2) +
-//	      pow(msg->pose.pose.position.y - combPoseMsg.pose.pose.position.y, 2))
+//		  comb_pose_msg_.pose.pose.position.x, 2) +
+//	      pow(msg->pose.pose.position.y - comb_pose_msg_.pose.pose.position.y, 2))
 //	      / dt.toSec();
 //	double vt = (tf::getYaw(msg->pose.pose.orientation) -
-//			tf::getYaw(combPoseMsg.pose.pose.orientation)) / dt.toSec();
+//			tf::getYaw(comb_pose_msg_.pose.pose.orientation)) / dt.toSec();
 //
-//	combPoseMsg = *msg;
-//	combOdomMsg.header.stamp = ros::Time::now();
-//	combOdomMsg.pose.pose = combPoseMsg.pose.pose;
-//	combOdomMsg.twist.twist.linear.x = vx;
-//	combOdomMsg.twist.twist.angular.z = vt;
+//	comb_pose_msg_ = *msg;
+//	comb_odom_msg_.header.stamp = ros::Time::now();
+//	comb_odom_msg_.pose.pose = comb_pose_msg_.pose.pose;
+//	comb_odom_msg_.twist.twist.linear.x = vx;
+//	comb_odom_msg_.twist.twist.angular.z = vt;
 }
 
 void TXT1::pubOdom(double x, double y, double theta, double vx, double vtheta)
@@ -91,57 +100,57 @@ void TXT1::pubOdom(double x, double y, double theta, double vx, double vtheta)
 	ros::Time currentTime = ros::Time::now();
 
     //first, we'll publish the transform over tf
-	odomTransMsg.header.stamp = currentTime;
-	odomTransMsg.header.frame_id = "/odom";
-	odomTransMsg.child_frame_id = "/base_footprint";
+	odom_trans_msg_.header.stamp = currentTime;
+	odom_trans_msg_.header.frame_id = "/odom";
+	odom_trans_msg_.child_frame_id = "/base_footprint";
 
-    odomTransMsg.transform.translation.x = x;
-    odomTransMsg.transform.translation.y = y;
-    odomTransMsg.transform.translation.z = 0.0;
-    odomQuat = tf::createQuaternionMsgFromYaw(theta);
-    odomTransMsg.transform.rotation = odomQuat;
+    odom_trans_msg_.transform.translation.x = x;
+    odom_trans_msg_.transform.translation.y = y;
+    odom_trans_msg_.transform.translation.z = 0.0;
+    odom_quat_ = tf::createQuaternionMsgFromYaw(theta);
+    odom_trans_msg_.transform.rotation = odom_quat_;
 
     //send the transform
-    odomBroadcaster.sendTransform(odomTransMsg);
+    odom_broadcaster_.sendTransform(odom_trans_msg_);
 
     //next, we'll publish the odometry message over ROS
-    odomMsg.header.stamp = currentTime;
-    odomMsg.header.frame_id = "/odom";
+    odom_msg_.header.stamp = currentTime;
+    odom_msg_.header.frame_id = "/odom";
 
     //set the position
-    odomMsg.pose.pose.position.x = x;
-    odomMsg.pose.pose.position.y = y;
-    odomMsg.pose.pose.position.z = 0.0;
-    odomMsg.pose.pose.orientation = odomQuat;
+    odom_msg_.pose.pose.position.x = x;
+    odom_msg_.pose.pose.position.y = y;
+    odom_msg_.pose.pose.position.z = 0.0;
+    odom_msg_.pose.pose.orientation = odom_quat_;
 
     /// set the position covariance
-    odomMsg.pose.covariance[0] = 1.0;
-    odomMsg.pose.covariance[7] = 1.0;
-    odomMsg.pose.covariance[14] = 99999;
-    odomMsg.pose.covariance[21] = 99999;
-    odomMsg.pose.covariance[28] = 99999;
-    odomMsg.pose.covariance[35] = 0.5;
+    odom_msg_.pose.covariance[0] = 1.0;
+    odom_msg_.pose.covariance[7] = 1.0;
+    odom_msg_.pose.covariance[14] = 99999;
+    odom_msg_.pose.covariance[21] = 99999;
+    odom_msg_.pose.covariance[28] = 99999;
+    odom_msg_.pose.covariance[35] = 0.5;
 
     //set the velocity
-    odomMsg.child_frame_id = "/base_footprint";
-    odomMsg.twist.twist.linear.x = vx;
-    odomMsg.twist.twist.linear.y = 0.0;
-    odomMsg.twist.twist.linear.z = 0.0;
-    odomMsg.twist.twist.angular.z = vtheta;
+    odom_msg_.child_frame_id = "/base_footprint";
+    odom_msg_.twist.twist.linear.x = vx;
+    odom_msg_.twist.twist.linear.y = 0.0;
+    odom_msg_.twist.twist.linear.z = 0.0;
+    odom_msg_.twist.twist.angular.z = vtheta;
 
     //publish the message
-    odom_pub.publish(odomMsg);
+    odom_pub_.publish(odom_msg_);
 }
 
 void TXT1::pubBattery(double cell1, double cell2, double cell3)
 {
-	batteryMsg.header.stamp = ros::Time::now();
-	batteryMsg.header.frame_id = "battery";
-	batteryMsg.cell1 = cell1;
-	batteryMsg.cell2 = cell2;
-	batteryMsg.cell3 = cell3;
+	battery_msg_.header.stamp = ros::Time::now();
+	battery_msg_.header.frame_id = "battery";
+	battery_msg_.cell1 = cell1;
+	battery_msg_.cell2 = cell2;
+	battery_msg_.cell3 = cell3;
 
-	battery_pub.publish(batteryMsg);
+	battery_pub_.publish(battery_msg_);
 }
 
 TXT1 *p;
@@ -157,7 +166,7 @@ int main(int argc, char **argv)
 
   	while (ros::ok())
   	{
-  		rxPacket.Receive(p->mySerial);
+  		rxPacket.Receive(p->my_serial_);
 
       	ros::spinOnce();
     	loop_rate.sleep();

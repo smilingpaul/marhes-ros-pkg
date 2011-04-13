@@ -18,16 +18,16 @@
 class TXT1
 {
 public:
-	geometry_msgs::Twist cmdVelMsg;
-	nav_msgs::Odometry odomMsg;
-	nav_msgs::Odometry combOdomMsg;
-	geometry_msgs::PoseWithCovarianceStamped combPoseMsg;
-	geometry_msgs::TransformStamped odomTransMsg;
-	geometry_msgs::Quaternion odomQuat;
-	txt_driver::Battery batteryMsg;
-	tf::TransformBroadcaster odomBroadcaster;
+	geometry_msgs::Twist cmd_vel_msg_;
+	nav_msgs::Odometry odom_msg_;
+	nav_msgs::Odometry comb_odom_msg_;
+	geometry_msgs::PoseWithCovarianceStamped comb_pose_msg_;
+	geometry_msgs::TransformStamped odom_trans_msg_;
+	geometry_msgs::Quaternion odom_quat_;
+	txt_driver::Battery battery_msg_;
+	tf::TransformBroadcaster odom_broadcaster_;
 
-	Serial::Serial * mySerial;
+	Serial::Serial * my_serial_;
 
 	TXT1(ros::NodeHandle nh);
 	virtual ~TXT1();
@@ -35,15 +35,17 @@ public:
 			double vtheta);
 	void pubBattery(double cell1, double cell2, double cell3);
 private:
-	ros::Subscriber cmd_vel_sub;
-	ros::Subscriber comb_odom_sub;
-	ros::Publisher odom_pub;
-	ros::Publisher battery_pub;
-	ros::Timer cmd_vel_tmr;
-	ros::Timer comb_odom_tmr;
+	ros::Subscriber cmd_vel_sub_;
+	ros::Subscriber comb_odom_sub_;
+	ros::Publisher odom_pub_;
+	ros::Publisher battery_pub_;
+	ros::Timer cmd_vel_tmr_;
+	ros::Timer comb_odom_tmr_;
 
-	ros::NodeHandle n;
-	std::string port;
+	ros::NodeHandle n_;
+	std::string port_;
+	bool comb_odom_cnt_;
+	int COMB_ODOM_CNT_LIMIT_;
 
 	void cmdVelCB(const geometry_msgs::TwistConstPtr& msg);
 	void cmdVelTmrCB(const ros::TimerEvent& e);
