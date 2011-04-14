@@ -15,7 +15,9 @@ public:
 
     n_private.param("odom_frame", odom_frame_, string("/odom"));
     n_private.param("odom_topic", odom_topic_, string("/vo"));
+    n_private.param("odom_filter_topic", odom_filter_topic_, string("/vo_filter"));
     n_private.param("freq", freq_, 50.0);
+//    n_private.param("bool_tf", bool_tf_, true);
 
     if (!n_private.hasParam("frame"))
       ROS_FATAL("Error: Parameter \"frame\" was not provided");
@@ -24,7 +26,8 @@ public:
 
     ROS_INFO(frame_.c_str());
 
-    odom_pub_ = n.advertise<nav_msgs::Odometry>(odom_topic_.c_str(), 50); 
+    odom_pub_ = n.advertise<nav_msgs::Odometry>(odom_topic_.c_str(), 50);
+    odom_filter_pub_ = n.advertise<nav_msgs::Odometry>(odom_filter_topic_.c_str(), 50); 
     timer_ = n.createTimer(ros::Duration(1/freq_), &TFToOdom::UpdateOdom, this);    
   }
 
@@ -82,12 +85,13 @@ public:
   }
 private:
   ros::NodeHandle n_;
-  ros::Publisher odom_pub_;
+  ros::Publisher odom_pub_, odom_filter_pub_;
   ros::Timer timer_;
   tf::TransformListener listener_;
   tf::StampedTransform last_transform_;
-  string frame_, odom_frame_, odom_topic_;
+  string frame_, odom_frame_, odom_topic_, odom_filter_topic_;
   double freq_;
+//  bool bool_tf_;
 };
 
 int main(int argc, char **argv)
