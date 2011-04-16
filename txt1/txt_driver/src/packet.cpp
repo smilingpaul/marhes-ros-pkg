@@ -283,7 +283,12 @@ void Packet::ProcessData()
 			theta = (double)((packet[12] << 24) + (packet[13] << 16) + (packet[14] << 8) + packet[15]) / 1000;
 			linvel = (double)((packet[16] << 24) + (packet[17] << 16) + (packet[18] << 8) + packet[19]) / 1000;
 			angvel = (double)((packet[20] << 24) + (packet[21] << 16) + (packet[22] << 8) + packet[23]) / 1000;
-
+			//			ROS_INFO("Linvel: %d, %d, %d, %d", packet[16], packet[17], packet[18], packet[19]);
+			ROS_INFO("Packet: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+					packet[0],packet[1],packet[2],packet[3],packet[4],packet[5],
+					packet[6],packet[7],packet[8],packet[9],packet[10],packet[11],packet[12],
+					packet[13],packet[14],packet[15],packet[16],packet[17],packet[18],packet[19],packet[20],
+					packet[21],packet[22],packet[23],packet[24],packet[25]);
 			p->pubOdom(xpos, ypos, theta, linvel, angvel);
 			break;
 		case CMD_BATTERY:
