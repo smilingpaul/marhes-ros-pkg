@@ -30,7 +30,7 @@ rosbuild_gensrv()
 #target_link_libraries(example ${PROJECT_NAME})
 
 #rosbuild_add_executable(action_test src/actions.cpp)
-#rosbuild_add_executable(states_test src/states.cpp)
+#rosbuild_add_executable(states_test src/states_light.cpp)
 rosbuild_add_executable(move_test src/move_potfield.cpp)
 #rosbuild_add_executable(light_test src/states_light.cpp)
 rosbuild_add_executable(experiment src/qlearner.cpp src/actions.cpp src/states_light.cpp src/experiment.cpp)

@@ -42,7 +42,7 @@ void States::odom_cb(const nav_msgs::Odometry msg)
   float y = odom_msg_.pose.pose.position.y;
   float t = tf::getYaw(odom_msg_.pose.pose.orientation);
   current_distance_ = sqrt(pow(-10.0 - x, 2) + pow(10.0 - y, 2));
-  current_light_ = 1 - pow(current_distance_ / 10.0, 2);
+  current_light_ = 100*(1 - pow(current_distance_ / 14.0, 1));
   float theta = atan2(10 - y, -10 - x); // returns pi -> -pi
   float bearing = theta - t;
   
