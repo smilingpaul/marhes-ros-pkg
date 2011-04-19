@@ -27,7 +27,7 @@ public:
     else
       n_private.getParam("frame", frame_);
 
-    ROS_INFO(frame_.c_str());
+    ROS_INFO("%s", frame_.c_str());
     dt_ = 1 / freq_;
 
     z_ = cvCreateMat(6,1,CV_32FC1);
@@ -56,9 +56,9 @@ public:
     const float processNoiseMat[] = {0.1, 0, 0, 0, 0, 0,
     		                         0, 0.1, 0, 0, 0, 0,
     		                         0, 0, 0.1, 0, 0, 0,
-    		                         0, 0, 0, 0.01, 0, 0,
-    		                         0, 0, 0, 0, 0.01, 0,
-    		                         0, 0, 0, 0, 0, 0.01};
+    		                         0, 0, 0, 5, 0, 0,
+    		                         0, 0, 0, 0, 5, 0,
+    		                         0, 0, 0, 0, 0, 5};
     memcpy(kalman_->process_noise_cov->data.fl, processNoiseMat, sizeof(processNoiseMat));
     PrintMat(kalman_->process_noise_cov);
 
@@ -106,7 +106,7 @@ public:
   void UpdateOdom(const ros::TimerEvent& event)
   {
     tf::StampedTransform transform;
-    double vx, vtheta, dt;
+    //double vx, vtheta, dt;
 
     try
     {
@@ -117,54 +117,64 @@ public:
       ROS_ERROR("%s",ex.what());
     }
 
-    cvmSet(z_, 0, 0, (float)transform.getOrigin().getX());
-    cvmSet(z_, 1, 0, (float)transform.getOrigin().getY());
-    cvmSet(z_, 2, 0, (float)tf::getYaw(transform.getRotation()));
-    cvmSet(z_, 3, 0, 0);
-    cvmSet(z_, 4, 0, 0);
-    cvmSet(z_, 5, 0, 0);
+    dt_ = transform.stamp_.toSec() - last_transform_.stamp_.toSec();
 
-//    PrintMat(z_);
+    if (dt_ > 0)
+    {
+        cvmSet(z_, 0, 0, (float)transform.getOrigin().getX());
+        cvmSet(z_, 1, 0, (float)transform.getOrigin().getY());
+        cvmSet(z_, 2, 0, (float)tf::getYaw(transform.getRotation()));
+        cvmSet(z_, 3, 0, 0);
+        cvmSet(z_, 4, 0, 0);
+        cvmSet(z_, 5, 0, 0);
+        ROS_INFO("yaw: %f", cvmGet(z_, 2, 0));
+		const float transitionMat[] = {1, 0, 0, dt_, 0, 0,
+									   0, 1, 0, 0, dt_, 0,
+									   0, 0, 1, 0, 0, dt_,
+									   0, 0, 0, 1, 0, 0,
+									   0, 0, 0, 0, 1, 0,
+									   0, 0, 0, 0, 0, 1};
+		memcpy(kalman_->transition_matrix->data.fl, transitionMat, sizeof(transitionMat));
+//		PrintMat(kalman_->transition_matrix);
 
-//    cvKalmanPredict(kalman_, 0);
-//    cvKalmanCorrect(kalman_, z_);
+		cvKalmanPredict(kalman_, 0);
+		cvKalmanCorrect(kalman_, z_);
 
-//    nav_msgs::Odometry odom_msg;
-//    //next, we'll publish the odometry message over ROS
-//    odom_msg.header.stamp = transform.stamp_;
-//    odom_msg.header.frame_id = transform.frame_id_;
-//    odom_msg.child_frame_id = transform.child_frame_id_;
-//
-//    //set the position
-//    odom_msg.pose.pose.position.x = (double)cvmGet(kalman_->state_post, 0, 0);
-//    odom_msg.pose.pose.position.y = (double)cvmGet(kalman_->state_post, 1, 0);
-//    odom_msg.pose.pose.position.z = 0.0;
-//    odom_msg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(
-//    		(double)cvmGet(kalman_->state_post, 2, 1));
-////    odom_msg.pose.pose.orientation.y = transform.getRotation().y();
-////    odom_msg.pose.pose.orientation.z = transform.getRotation().z();
-////    odom_msg.pose.pose.orientation.w = transform.getRotation().w();
-//
-//    odom_msg.pose.covariance[0] = 4.5;
-//    odom_msg.pose.covariance[7] = 4.5;
-//    odom_msg.pose.covariance[14] = 99999;
-//    odom_msg.pose.covariance[21] = 99999;
-//    odom_msg.pose.covariance[28] = 99999;
-//    odom_msg.pose.covariance[35] = 0.75;
-//
-//    vx = sqrt(pow(transform.getOrigin().x() - last_transform_.getOrigin().x(), 2) +
-//      pow(transform.getOrigin().y() - last_transform_.getOrigin().y(), 2)) / dt;
-//
-//    //set the velocity
-//    odom_msg.twist.twist.linear.x = sqrt(
-//    		pow((double)cvmGet(kalman_->state_post, 3, 0), 2) +
-//    		pow((double)cvmGet(kalman_->state_post, 4, 0), 2));
-//    odom_msg.twist.twist.linear.y = 0.0;
-//    odom_msg.twist.twist.linear.z = 0.0;
-//    odom_msg.twist.twist.angular.z = (double)cvmGet(kalman_->state_post, 5, 0);
-//
-//    //publish the message
-//    odom_pub_.publish(odom_msg);
+		nav_msgs::Odometry odom_msg;
+		//next, we'll publish the odometry message over ROS
+		odom_msg.header.stamp = transform.stamp_;
+		odom_msg.header.frame_id = transform.frame_id_;
+		odom_msg.child_frame_id = transform.child_frame_id_;
+
+		//set the position
+		odom_msg.pose.pose.position.x = (double)cvmGet(kalman_->state_post, 0, 0);
+		odom_msg.pose.pose.position.y = (double)cvmGet(kalman_->state_post, 1, 0);
+		odom_msg.pose.pose.position.z = 0.0;
+		odom_msg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(
+				(double)cvmGet(kalman_->state_post, 2, 0));
+	//    odom_msg.pose.pose.orientation.y = transform.getRotation().y();
+	//    odom_msg.pose.pose.orientation.z = transform.getRotation().z();
+	//    odom_msg.pose.pose.orientation.w = transform.getRotation().w();
+
+		odom_msg.pose.covariance[0] = 4.5;
+		odom_msg.pose.covariance[7] = 4.5;
+		odom_msg.pose.covariance[14] = 99999;
+		odom_msg.pose.covariance[21] = 99999;
+		odom_msg.pose.covariance[28] = 99999;
+		odom_msg.pose.covariance[35] = 0.75;
+
+		//set the velocity
+		odom_msg.twist.twist.linear.x = sqrt(
+				pow((double)cvmGet(kalman_->state_post, 3, 0), 2) +
+				pow((double)cvmGet(kalman_->state_post, 4, 0), 2));
+		odom_msg.twist.twist.linear.y = 0.0;
+		odom_msg.twist.twist.linear.z = 0.0;
+		odom_msg.twist.twist.angular.z = (double)cvmGet(kalman_->state_post, 5, 0);
+
+		//publish the message
+		odom_pub_.publish(odom_msg);
+		last_transform_ = transform;
+    }
   }
 private:
   ros::NodeHandle n_;

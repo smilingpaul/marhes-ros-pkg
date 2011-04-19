@@ -23,6 +23,7 @@ public:
 			std::vector<double> q_array_init);
 	void Update(double reward, int state, int state_p, int action);
 	int GetAction(int state);
+	std::string PrintTable(void);
 
 private:
 	int num_actions_, num_states_, size_array_, cnt_explore_, max_explore_;

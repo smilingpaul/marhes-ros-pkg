@@ -131,3 +131,18 @@ double QLearner::GetMaxActionQVal(int state)
 
 	return max;
 }
+
+std::string QLearner::PrintTable(void)
+{
+	std::string s;
+	for(int state = 0; state < num_states_; state++)
+	{
+		for(int action = 0; action < num_actions_; action++)
+		{
+			s.append(boost::lexical_cast<std::string>(q_array_[state * num_actions_ + action]) + ", ");
+		}
+		s.append("\n");
+	}
+
+	return s;
+}
