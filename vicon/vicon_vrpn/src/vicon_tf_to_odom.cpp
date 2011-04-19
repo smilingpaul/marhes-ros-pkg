@@ -29,6 +29,7 @@ public:
 
     ROS_INFO("%s", frame_.c_str());
     dt_ = 1 / freq_;
+    last_theta_ = 0.0;
 
     z_ = cvCreateMat(6,1,CV_32FC1);
     kalman_ = cvCreateKalman(6, 6, 0); // 6 states [x y th dx dy dth]
@@ -106,7 +107,7 @@ public:
   void UpdateOdom(const ros::TimerEvent& event)
   {
     tf::StampedTransform transform;
-    //double vx, vtheta, dt;
+    double current_theta, last_theta, d_theta;  //double vx, vtheta, dt;
 
     try
     {
@@ -123,6 +124,13 @@ public:
     {
         cvmSet(z_, 0, 0, (float)transform.getOrigin().getX());
         cvmSet(z_, 1, 0, (float)transform.getOrigin().getY());
+
+        // Figure out theta
+        current_theta = transform.getRotation();
+        last_theta = cvmGet(kalman_->state_post, 2, 0);
+        if (current_theta > 0 && )
+        	d_theta = tf::getYaw(transform.getRotation()) - ;
+        theta_ += d_theta;
         cvmSet(z_, 2, 0, (float)tf::getYaw(transform.getRotation()));
         cvmSet(z_, 3, 0, 0);
         cvmSet(z_, 4, 0, 0);
@@ -184,7 +192,7 @@ private:
   tf::StampedTransform last_transform_;
   string frame_, odom_frame_, odom_topic_, odom_filter_topic_;
   float dt_;
-  double freq_;
+  double freq_, last_theta_;
 //  bool bool_tf_;
   CvKalman* kalman_;
   CvMat* z_;
