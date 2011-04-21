@@ -1,0 +1,3 @@
+host_addr: Vicon
+tf_ref_frame: /odom
+subject_list: [txt01, Pioneer01, Pioneer03]

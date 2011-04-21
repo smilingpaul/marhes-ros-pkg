@@ -1,0 +1,18 @@
+<package>
+  <description brief="imu_display">
+
+     imu_display
+
+  </description>
+  <author>Titus Appel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/imu_display</url>
+  <depend package="roscpp"/>
+  <depend package="microstrain_3dmgx2_imu"/>
+  <depend package="visualization_msgs"/>
+  <depend package="nav_msgs"/>
+
+</package>
+
+

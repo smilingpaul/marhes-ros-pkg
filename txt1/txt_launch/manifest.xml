@@ -1,0 +1,14 @@
+<package>
+  <description brief="txt_launch">
+
+     txt_launch
+
+  </description>
+  <author>Titus Appel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/txt_launch</url>
+
+</package>
+
+

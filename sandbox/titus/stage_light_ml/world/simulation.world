@@ -1,0 +1,78 @@
+# willow-building.world - basic willow building
+# Authors: Feng Wu
+# $Id$
+
+include "map.inc"
+include "sick.inc"
+include "pioneer.inc"
+
+# time to pause (in GUI mode) or quit (in headless mode (-g)) the simulation
+#quit_time 3600 # 1 hour of simulated time
+
+paused 0
+
+resolution 0.025
+
+# configure the GUI window
+window
+(
+  size [ 1024 768 ] # in pixels
+  center [ -20 21 ]
+	rotate [ 0.000 -1.560 ]
+	scale 50.00
+  			
+  show_data 1 # 1=on 0=off
+  show_flags 1
+  show_grid 1
+
+  interval 100
+)
+
+# load an environment bitmap
+floorplan
+( 
+  name "willow"
+  size [20 20 0.5]
+  pose [ -10 10 0 90.000 ]
+
+  boundary 1
+  bitmap "square.pgm"
+)
+
+define topurg laser
+(
+
+  range_max 30.0
+  fov 270.25
+  samples 1081
+  # generic model properties
+  color "black"
+  size [ 0.05 0.05 0.1 ]
+)
+
+pioneer2dx
+(
+  name "pr2"
+  pose [ -7.5 7.5 0 135.000 ]
+
+  sicklaser(samples 1081 range_max 30.0 fov 270.25)
+
+  #ctrl "wander"
+#  joules 100000
+#  joules_capacity 400000
+
+  localization "gps"
+  localization_origin [0 0 0 0]
+
+  gripper(pose [0.25 0 -0.22 0] obstacle_return 0)
+
+  blobfinder(colors_count 3 colors [ "red" "purple" "orange" ] image [80 60])
+  fiducial(range_max 8 range_max_id 5 pose [0 0 -0.2 0] )
+  
+  fiducial_return 0
+  gripper_return 0
+)
+
+#zone( pose [-25 22 0 66] size [1 1 0] color "green")
+puck( pose [-10 10 0 0 ] color "orange")
+

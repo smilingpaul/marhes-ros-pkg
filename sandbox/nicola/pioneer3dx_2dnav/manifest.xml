@@ -1,0 +1,18 @@
+<package>
+  <description brief="pioneer3dx_2dnav">
+
+     pioneer3dx_2dnav
+
+  </description>
+  <author>root</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pioneer3dx_2dnav</url>
+  <depend package="move_base"/>
+  <depend package="pioneer_setup_tf"/>
+  <depend package="p2os_driver"/>
+  <depend package="hokuyo_node"/>
+
+</package>
+
+
