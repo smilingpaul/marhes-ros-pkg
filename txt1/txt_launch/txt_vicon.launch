@@ -9,6 +9,9 @@
   </node>
   
   <!-- Launch the txt node with ekf -->
-  <include file="$(find txt_launch)/txt_node.launch" />
+  <node name="txt_driver" pkg="txt_driver" type="txt_node">
+    <param name="port" value="/dev/ttyUSB1" />
+  </node>
+  <!--include file="$(find txt_launch)/txt_node.launch" /-->
 
 </launch>
