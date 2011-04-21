@@ -4,7 +4,7 @@
 #include "opencv/cv.h"
 #include "opencv/highgui.h"
 #include "cv_bridge/CvBridge.h"
-#include <math.h>
+#include <cmath>
 
 using namespace std;
 
@@ -107,7 +107,8 @@ public:
   void UpdateOdom(const ros::TimerEvent& event)
   {
     tf::StampedTransform transform;
-    double current_theta, last_theta, d_theta;  //double vx, vtheta, dt;
+    double d_theta, theta, vx, vy, theta_max, theta_min, theta_v;  //double vx, vtheta, dt;
+    bool test = false;
 
     try
     {
@@ -126,16 +127,23 @@ public:
         cvmSet(z_, 1, 0, (float)transform.getOrigin().getY());
 
         // Figure out theta
-        current_theta = transform.getRotation();
-        last_theta = cvmGet(kalman_->state_post, 2, 0);
-        if (current_theta > 0 && )
-        	d_theta = tf::getYaw(transform.getRotation()) - ;
-        theta_ += d_theta;
-        cvmSet(z_, 2, 0, (float)tf::getYaw(transform.getRotation()));
+        d_theta = tf::getYaw(transform.getRotation()) - tf::getYaw(last_transform_.getRotation());
+
+        // If theta is goes over singularity
+        if (d_theta > M_PI)
+        	d_theta -= 2 * M_PI;
+        else if (d_theta < -M_PI)
+        	d_theta += 2 * M_PI;
+
+        last_theta_ += d_theta;
+        cvmSet(z_, 2, 0, last_theta_);
+
+        // Velocities unobserved
         cvmSet(z_, 3, 0, 0);
         cvmSet(z_, 4, 0, 0);
         cvmSet(z_, 5, 0, 0);
-        ROS_INFO("yaw: %f", cvmGet(z_, 2, 0));
+//        ROS_INFO("yaw: %f", cvmGet(z_, 2, 0));
+
 		const float transitionMat[] = {1, 0, 0, dt_, 0, 0,
 									   0, 1, 0, 0, dt_, 0,
 									   0, 0, 1, 0, 0, dt_,
@@ -158,11 +166,16 @@ public:
 		odom_msg.pose.pose.position.x = (double)cvmGet(kalman_->state_post, 0, 0);
 		odom_msg.pose.pose.position.y = (double)cvmGet(kalman_->state_post, 1, 0);
 		odom_msg.pose.pose.position.z = 0.0;
-		odom_msg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(
-				(double)cvmGet(kalman_->state_post, 2, 0));
+		theta = (double)fmod(cvmGet(kalman_->state_post, 2, 0), 2 * M_PI);
+		if (theta > M_PI)
+			theta -= 2 * M_PI;
+		if (theta < -M_PI)
+			theta += 2 * M_PI;
+		odom_msg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
 	//    odom_msg.pose.pose.orientation.y = transform.getRotation().y();
 	//    odom_msg.pose.pose.orientation.z = transform.getRotation().z();
 	//    odom_msg.pose.pose.orientation.w = transform.getRotation().w();
+
 
 		odom_msg.pose.covariance[0] = 4.5;
 		odom_msg.pose.covariance[7] = 4.5;
@@ -178,6 +191,52 @@ public:
 		odom_msg.twist.twist.linear.y = 0.0;
 		odom_msg.twist.twist.linear.z = 0.0;
 		odom_msg.twist.twist.angular.z = (double)cvmGet(kalman_->state_post, 5, 0);
+
+		// Fix velocity
+		vx = cvmGet(kalman_->state_post, 3, 0);
+		vy = cvmGet(kalman_->state_post, 4, 0);
+		ROS_INFO("vx: %f, vy: %f, Yaw: %f", vx, vy, theta);
+		theta_v = atan2(vy, vx);
+//		if ((theta > 2*M_PI/3 || theta < -2*M_PI/3) && theta_v < 2*M_PI/3 && theta_v > -2*M_PI/3)
+//			odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+//		else if (theta > theta_v + M_PI / 2 || theta < theta_v - M_PI / 2)
+//			odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+
+		theta_max = theta + (M_PI / 2);
+		if (theta_max > M_PI)
+			theta_max -= 2 * M_PI;
+		theta_min = theta - (M_PI / 2);
+		if (theta_min < -M_PI)
+			theta_min += 2 * M_PI;
+
+		ROS_INFO("%f, %f, %f", theta_v, theta_max, theta_min);
+
+		if ((theta <= M_PI / 2) && (theta >= -M_PI / 2))
+		{
+			if (!((theta_v < theta_max) && (theta_v > theta_min)))
+			{
+                odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+                ROS_INFO("Something is wrong: 1");
+            }
+		}
+		else
+		{
+			if ((theta_v > theta_max) && (theta_v < theta_min))
+			{	
+                odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+				ROS_INFO("Something is wrong: 2");
+            }
+		}
+
+//		if (vx >= 0 && vy >= 0 && (theta < 0 || theta > M_PI / 2))
+//			odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+//		if (vx < 0  && vy >= 0 && theta <= M_PI / 2)
+//			odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+//		if (vx <= 0 && vy < 0 && theta > -M_PI / 2)
+//			odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+//		if (vx > 0 && vy < 0 && (theta >= 0 || theta <= -M_PI / 2))
+//			odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
+
 
 		//publish the message
 		odom_pub_.publish(odom_msg);
