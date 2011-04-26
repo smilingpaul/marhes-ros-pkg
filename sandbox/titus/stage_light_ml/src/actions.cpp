@@ -15,7 +15,7 @@ void Actions::Move(moveType type)
   {
     case LeftForward:
       vel_msg.linear.x = 0.5;
-      vel_msg.angular.z = 0.5;
+      vel_msg.angular.z = 1.0;
       break;
     case StraightForward:
       vel_msg.linear.x = 0.5;
@@ -23,11 +23,11 @@ void Actions::Move(moveType type)
       break;
     case RightForward:
       vel_msg.linear.x = 0.5;
-      vel_msg.angular.z = -0.5;
+      vel_msg.angular.z = -1.0;
       break;
     case LeftBackward:
       vel_msg.linear.x = -0.5;
-      vel_msg.angular.z = 0.5;
+      vel_msg.angular.z = 1.0;
       break;
     case StraightBackward:
       vel_msg.linear.x = -0.5;
@@ -35,7 +35,7 @@ void Actions::Move(moveType type)
       break;
     case RightBackward:
       vel_msg.linear.x = -0.5;
-      vel_msg.angular.z = -0.5;
+      vel_msg.angular.z = -1.0;
       break;
     default:
       vel_msg.linear.x = 0;
@@ -51,26 +51,26 @@ int Actions::GetNumActions(void)
 	return num_actions_;
 }
 
-//int main(int argc, char **argv)
-//{
-//  ros::init(argc, argv, "actions_test");
-//  ros::NodeHandle n;
-//  int i = 0;
-//
-//  Actions* r = new Actions(n);
-//  ros::Rate loop_rate(1);
-//
-//  while(ros::ok())
-//  {
-//    r->Move((Actions::moveType)i);
-//    i++;
-//    if (i > 5)
-//      i = 0;
-//
-//    ros::spinOnce();
-//    loop_rate.sleep();
-//  }
-//
-//  return 0;
-//}
+/*int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "actions_test");
+  ros::NodeHandle n;
+  int i = 0;
+
+  Actions* r = new Actions(n);
+  ros::Rate loop_rate(1);
+
+  while(ros::ok())
+  {
+    r->Move((Actions::moveType)i);
+    i++;
+    if (i > 5)
+      i = 0;
+
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+
+  return 0;
+}*/
 	
