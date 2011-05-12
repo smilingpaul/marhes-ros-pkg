@@ -18,7 +18,7 @@ A.light_last = 0;
 A.state = 0;
 A.reward = 0;
 A.num_states = 3;
-
+surf(A.X, A.Y, A.Z);
 s = class(A, 'states');
 
 end
