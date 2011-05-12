@@ -44,7 +44,7 @@ private:
 
 	ros::NodeHandle n_;
 	std::string port_;
-	bool comb_odom_cnt_;
+	int comb_odom_cnt_;
 	int COMB_ODOM_CNT_LIMIT_;
 
 	void cmdVelCB(const geometry_msgs::TwistConstPtr& msg);
