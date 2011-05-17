@@ -1,3 +1,9 @@
+/*! \brief Brief description.
+ *         Brief description continued.
+ *
+ *  Detailed description starts here.
+ */
+
 #include "ros/ros.h"
 #include "txt_driver/txt1.h"
 
@@ -19,6 +25,9 @@ TXT1::TXT1(ros::NodeHandle nh)
 
 	odom_pub_ = n_.advertise<nav_msgs::Odometry>("/odom", 50);
 	battery_pub_ = n_.advertise<txt_driver::Battery>("/battery", 50);
+
+	pid_srv_ = n_.advertiseService("/pid_change", &TXT1::pidSrvCB, this);
+
 
 	// Added for testing
 	comb_odom_msg_.header.stamp = ros::Time::now();
@@ -151,6 +160,18 @@ void TXT1::pubBattery(double cell1, double cell2, double cell3)
 	battery_msg_.cell3 = cell3;
 
 	battery_pub_.publish(battery_msg_);
+}
+
+bool TXT1::pidSrvCB(txt_driver::pid::Request& request, txt_driver::pid::Response& response)
+{
+	pid_req_ = request;
+
+	Packet packet;
+	packet.BuildPidTx(request);
+	packet.Send(my_serial_);
+
+	response.result = true;
+	return true;
 }
 
 TXT1 *p;

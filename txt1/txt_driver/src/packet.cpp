@@ -131,6 +131,54 @@ int Packet::BuildCombOdom(const nav_msgs::Odometry &msg)
 	return(0);
 }
 
+int Packet::BuildPidTx(const txt_driver::pid::Request &req)
+{
+	unsigned char data[SIZE_PID_TX] = {0};
+	int temp;
+
+	data[0] = CMD_PID_TX;
+
+	temp = (int)(req.kp_lv);
+	data[1] = (unsigned char)(temp >> 24);
+	data[2] = (unsigned char)(temp >> 16);
+	data[3] = (unsigned char)(temp >> 8);
+	data[4] = (unsigned char)(temp & 0x000000FF);
+
+	temp = (int)(req.ki_lv);
+	data[5] = (unsigned char)(temp >> 24);
+	data[6] = (unsigned char)(temp >> 16);
+	data[7] = (unsigned char)(temp >> 8);
+	data[8] = (unsigned char)(temp & 0x000000FF);
+
+	temp = (int)(req.kd_lv);
+	data[9] = (unsigned char)(temp >> 24);
+	data[10] = (unsigned char)(temp >> 16);
+	data[11] = (unsigned char)(temp >> 8);
+	data[12] = (unsigned char)(temp & 0x000000FF);
+
+	temp = (int)(req.kp_av);
+	data[13] = (unsigned char)(temp >> 24);
+	data[14] = (unsigned char)(temp >> 16);
+	data[15] = (unsigned char)(temp >> 8);
+	data[16] = (unsigned char)(temp & 0x000000FF);
+
+	temp = (int)(req.ki_av);
+	data[17] = (unsigned char)(temp >> 24);
+	data[18] = (unsigned char)(temp >> 16);
+	data[19] = (unsigned char)(temp >> 8);
+	data[20] = (unsigned char)(temp & 0x000000FF);
+
+	temp = (int)(req.kd_av);
+	data[21] = (unsigned char)(temp >> 24);
+	data[22] = (unsigned char)(temp >> 16);
+	data[23] = (unsigned char)(temp >> 8);
+	data[24] = (unsigned char)(temp & 0x000000FF);
+
+	Build(data, SIZE_PID_TX);
+
+	return(0);
+}
+
 /******************************************************************************
  * Name: 	CalcChkSum()
  * Inputs:	None
