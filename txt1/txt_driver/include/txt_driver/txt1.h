@@ -5,6 +5,7 @@
 #include "txt_driver/packet.h"
 #include "txt_driver/serial.h"
 #include "txt_driver/Battery.h"
+#include "txt_driver/pid.h"
 
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
@@ -26,6 +27,7 @@ public:
 	geometry_msgs::Quaternion odom_quat_;
 	txt_driver::Battery battery_msg_;
 	tf::TransformBroadcaster odom_broadcaster_;
+	txt_driver::pid::Request pid_req_;
 
 	Serial::Serial * my_serial_;
 
@@ -41,16 +43,20 @@ private:
 	ros::Publisher battery_pub_;
 	ros::Timer cmd_vel_tmr_;
 	ros::Timer comb_odom_tmr_;
+	ros::ServiceServer pid_srv_;
 
 	ros::NodeHandle n_;
 	std::string port_;
 	int comb_odom_cnt_;
 	int COMB_ODOM_CNT_LIMIT_;
 
+	//int kp_lv_, ki_lv_, kd_lv_, kp_av_, ki_av_, kd_av_;
+
 	void cmdVelCB(const geometry_msgs::TwistConstPtr& msg);
 	void cmdVelTmrCB(const ros::TimerEvent& e);
 //	void combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
 	void combOdomCB(const nav_msgs::OdometryConstPtr &msg);
 	void combOdomTmrCB(const ros::TimerEvent& e);
+	bool pidSrvCB(txt_driver::pid::Request& request, txt_driver::pid::Response& response);
 };
 #endif

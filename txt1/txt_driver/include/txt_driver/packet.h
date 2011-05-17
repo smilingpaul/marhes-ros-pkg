@@ -4,6 +4,7 @@
 #include "ros/ros.h"
 #include "txt_driver/serial.h"
 #include "txt_driver/txt1.h"
+#include "txt_driver/pid.h"
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
 
@@ -23,9 +24,9 @@ class Packet
 		int droppedPkts, totalPkts;
 
 		typedef enum {CMD_VEL = 103, CMD_ODOM_ENC = 104, CMD_ODOM_COMB = 105,
-			CMD_BATTERY = 106} COMMANDS;
+			CMD_BATTERY = 106, CMD_PID_TX = 107} COMMANDS;
 		typedef enum {SIZE_VEL = 5, SIZE_ODOM_ENC = 21, SIZE_ODOM_COMB = 21,
-			SIZE_BATTERY = 7} SIZES;
+			SIZE_BATTERY = 7, SIZE_PID_TX = 25} SIZES;
 
 		int CalcChkSum();
 		bool Check();
@@ -36,6 +37,7 @@ class Packet
 		int Build(unsigned char *data, unsigned char dataSize);
         int BuildCmdVel(const geometry_msgs::Twist &msg);
         int BuildCombOdom(const nav_msgs::Odometry &msg);
+        int BuildPidTx(const txt_driver::pid::Request &req);
         void Send( Serial::Serial* port );
         void Receive( Serial::Serial * port );
         void Print();
