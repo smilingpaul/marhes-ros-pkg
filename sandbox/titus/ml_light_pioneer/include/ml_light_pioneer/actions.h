@@ -8,16 +8,16 @@
 class Actions
 {
 public:
-  typedef enum {LeftForward, StraightForward, RightForward, LeftBackward, StraightBackward, RightBackward} moveType;
-
   Actions(ros::NodeHandle nh);
-  void Move(moveType type);
+//  void Move(int action);
   int GetNumActions(void);
   
 private:  
   ros::NodeHandle n_;
   ros::Publisher vel_pub_;
   int num_actions_;
+  double ang_vel_lim_, ang_inc_;
+  std::vector<double> ang_vels_;
 };
 
 #endif
