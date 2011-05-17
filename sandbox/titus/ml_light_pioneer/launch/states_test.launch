@@ -1,0 +1,10 @@
+<launch>
+
+  <node name="states_test" pkg="ml_light_pioneer" type="states_test" output="screen">
+    <remap to="/interface_kit/95283/sensor/4" from="flls"/>
+    <remap to="/interface_kit/95283/sensor/5" from="flls"/>
+    <remap to="/interface_kit/95283/sensor/6" from="flls"/>
+    <remap to="/interface_kit/95283/sensor/7" from="flls"/>
+  </node>
+
+</launch>
