@@ -14,6 +14,7 @@
   <depend package="p2os_driver"/>
   <depend package="nav_msgs"/>
   <depend package="phidgets_ros"/>
+  <depend package="visualization_msgs"/>
 
 </package>
 

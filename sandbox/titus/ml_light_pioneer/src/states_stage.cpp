@@ -1,4 +1,4 @@
-#include "ml_light_pioneer/states.h"
+#include "ml_light_pioneer/states_stage.h"
                
 States::States(ros::NodeHandle nh)
 {
@@ -9,11 +9,7 @@ States::States(ros::NodeHandle nh)
   n_private.param("xdist", xdist_, 8 / 0.0254);
   n_private.param("ydist", ydist_, 6 / 0.0254);
 
-  sub_odom_ = n_.subscribe("odom", 1, &States::cb_odom, this);
-  sub_flls_ = n_.subscribe("flls", 1, &States::cb_flls, this);
-  sub_frls_ = n_.subscribe("frls", 1, &States::cb_frls, this);
-  sub_rlls_ = n_.subscribe("rlls", 1, &States::cb_rlls, this);
-  sub_rrls_ = n_.subscribe("rrls", 1, &States::cb_rrls, this);
+  sub_odom_ = n_.subscribe("base_pose_ground_truth", 1, &States::cb_odom, this);
   tmr_state_ = n_.createTimer(ros::Duration(0.1), &States::cb_tmr_state, this);
   vis_pub_ = n_.advertise<visualization_msgs::Marker>("light_marker", 1);
 
@@ -70,14 +66,17 @@ int States::GetNumStates(void)
 
 void States::cb_tmr_state(const ros::TimerEvent& event)
 {
-  double x, y;
+  double xdist, ydist;
   int i;
   
-  x = cos_ang_ * (ls_vals_[FLLS] + ls_vals_[FRLS] - ls_vals_[RLLS] - ls_vals_[RRLS]);
-  y = sin_ang_ * (ls_vals_[FLLS] - ls_vals_[FRLS] + ls_vals_[RLLS] - ls_vals_[RRLS]);
-
-  light_dir_ = atan2(y, x);
-
+  xdist = -odom_msg_.pose.pose.position.x;
+  ydist = -odom_msg_.pose.pose.position.y;
+  light_dir_ = atan2(ydist, xdist) - tf::getYaw(odom_msg_.pose.pose.orientation);
+  while (light_dir_ > M_PI)
+    light_dir_ -= 2 * M_PI;
+  while (light_dir_ < -M_PI)
+    light_dir_ += 2 * M_PI;
+  
   for (i = 0; i < num_states_; i++)
   {
     if (light_dir_ < ang_start_ + i * ang_inc_)
@@ -93,9 +92,10 @@ void States::cb_tmr_state(const ros::TimerEvent& event)
 
   // publish light direction marker
   marker_.header.stamp = ros::Time::now();
-  marker_.pose.position.x = 0;
-  marker_.pose.position.y = 0;
-  marker_.pose.orientation = tf::createQuaternionMsgFromYaw(light_dir_);
+  marker_.pose.position.x = odom_msg_.pose.pose.position.x;
+  marker_.pose.position.y = odom_msg_.pose.pose.position.x;
+  marker_.pose.orientation = tf::createQuaternionMsgFromYaw(light_dir_ +
+                             tf::getYaw(odom_msg_.pose.pose.orientation));
   vis_pub_.publish( marker_ );
 }
   
@@ -104,31 +104,6 @@ void States::cb_odom(nav_msgs::Odometry msg)
   odom_msg_ = msg;
 }
 
-void States::cb_flls(phidgets_ros::Float64Stamped msg)
-{
-  ls_vals_[FLLS] = msg.data;
-  //ROS_INFO("FLLS: %f", ls_vals_[FLLS]);
-}
-
-void States::cb_frls(phidgets_ros::Float64Stamped msg)
-{
-  ls_vals_[FRLS] = msg.data;
-  //ROS_INFO("FRLS: %f", ls_vals_[FRLS]);
-}
-
-void States::cb_rlls(phidgets_ros::Float64Stamped msg)
-{
-  ls_vals_[RLLS] = msg.data;
-  //ROS_INFO("RLLS: %f", ls_vals_[RLLS]);
-}
-
-void States::cb_rrls(phidgets_ros::Float64Stamped msg)
-{
-  ls_vals_[RRLS] = msg.data;
-  //ROS_INFO("RRLS: %f", ls_vals_[RRLS]);
-}
-
-/*
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "states_test");
@@ -139,4 +114,4 @@ int main(int argc, char **argv)
 
   return 0;
 }
-*/
+
