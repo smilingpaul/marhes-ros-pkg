@@ -1,37 +1,40 @@
-#include "stage_light_ml/qlearner.h"
+#include "ml_light_pioneer/qlearner.h"
 
-QLearner::QLearner(int num_actions, int num_states, double learning_rate,
-		double discount_factor, bool learn, int max_explore) :
-		num_actions_(num_actions),
-		num_states_(num_states),
-		cnt_explore_(0),
-		max_explore_(max_explore),
-		learning_rate_(learning_rate),
-		discount_factor_(discount_factor),
-		learn_(learn)
+QLearner::QLearner(ros::NodeHandle nh)
 {
-	size_array_ = num_actions_ * num_states_;
-	for (int i = 0; i < size_array_; i++)
-		q_array_.push_back(0.0);
-	Init();
-	srand ( time(NULL) );
-}
+  n_ = nh;
+  ros::NodeHandle n_private("~");
+  n_private.param("num_states", num_states_, 8);
+  n_private.param("num_actions", num_actions_, 3);
+  n_private.param("learning_rate", learning_rate_, 0.3);
+  n_private.param("discount_factor", discount_factor_, 0.5);
+  n_private.param("temp_const", temp_const_, 5.0);
+  n_private.param("temp_alpha", temp_alpha_, 0.85);
+  
+  temp_cnt_ = 0;
+  temp_ = temp_const_ * pow(temp_alpha_, temp_cnt_);
+  size_array_ = num_actions_ * num_states_;
 
-QLearner::QLearner(int num_actions, int num_states, double learning_rate,
-		double discount_factor, bool learn, int max_explore,
-		std::vector<double> q_array_init) :
-		num_actions_(num_actions),
-		num_states_(num_states),
-		cnt_explore_(0),
-		max_explore_(max_explore),
-		learning_rate_(learning_rate),
-		discount_factor_(discount_factor),
-		learn_(learn),
-		q_array_(q_array_init)
-{
-	size_array_ = num_actions_ * num_states_;
-	Init();
-	srand ( time(NULL) );
+  srand ( time(NULL) );
+ 	Init();
+ 	
+  if (n_private.hasParam("qarray"))
+  {
+    learn_ = false;
+    // Get the qtable
+  }
+  else
+  {
+    learn_ = true;
+    double floor = -1, ceiling = 1, range = (ceiling - floor);
+    q_array_ = std::vector<double>(size_array_);
+    for (int i = 0; i < size_array_; i++)
+    {
+      q_array_[i] = floor + (range * rand()) / (RAND_MAX + 1.0);
+    }
+  } 
+  
+  ROS_INFO("%s", PrintTable().c_str()); 
 }
 
 void QLearner::Update(double reward, int state, int state_p, int action)
@@ -47,35 +50,47 @@ void QLearner::Update(double reward, int state, int state_p, int action)
 	int vector_index = state * num_actions_ + action;
 	double max_future_val = GetMaxActionQVal(state_p);
 	q_array_[vector_index] += learning_rate_ * (reward + discount_factor_ *
-			max_future_val - q_array_[vector_index]);
+			max_future_val - QVal(state, action));
 }
 
 int QLearner::GetAction(int state)
 {
-	int action;
-
+	int action, i;
+  double probs[num_actions_], sum = 0, r;
+  
 	if (learn_)
 	{
-		// Check if we should explore
-		if (cnt_explore_ > max_explore_)
-		{
-			cnt_explore_ = 0;
-			action = GetRandAction();
-		}
-		else
-		{
-			action = GetMaxAction(state);
-			cnt_explore_++;
-			if (action < 0)
-				action = GetRandAction();
-		}
-	}
-	else
-	{
-		action = GetMaxAction(state);
-	}
-
-	return action;
+  	for (i = 0; i < num_actions_; i++)
+	  {
+	    probs[i] = exp(QVal(state, i) / temp_);
+	    sum += probs[i];
+	  }
+	
+	  for (i = 0; i < num_actions_; i++)
+	  {
+	    probs[i] = probs[i] / sum;
+	  }
+    
+    r = rand() / (RAND_MAX + 1.0);
+    i = 0;
+    sum = 0;
+    while (i < num_actions_)
+    {
+      sum += probs[i];
+      if (r < sum)
+        break;
+      else
+        i++;
+    }
+    
+    action = i;
+  }
+  else
+  {
+    action = GetMaxAction(state);
+  }
+  
+  return action;
 }
 
 void QLearner::Init(void)
@@ -85,51 +100,50 @@ void QLearner::Init(void)
 
 	if (discount_factor_ >= 1 || discount_factor_ < 0)
 		ROS_FATAL("Discount factor is not 0 <= df < 1.");
-
-	if (size_array_ != (int)q_array_.size())
-		ROS_FATAL("Size of array is not the correct size.");
-}
-
-int QLearner::GetRandAction(void)
-{
-	int action = rand() % num_actions_;
-	return action;
 }
 
 int QLearner::GetMaxAction(int state)
 {
-	int first_index = state * num_actions_;
-	int last_index = first_index + num_actions_;
-	int index = first_index;
-	double max = q_array_[first_index];
-
-	for (int i = first_index; i < last_index; i++)
-	{
-		if (q_array_[i] > max)
-		{
-			max = q_array_[i];
-			index = i;
-		}
-	}
-
-	return index % num_actions_;
+  int maxAction = 0;
+  double maxQVal = QVal(state, 0);
+  
+  for (int i = 1; i < num_actions_; i++)
+  {
+    if (maxQVal < QVal(state, i))
+    {
+      maxQVal = QVal(state, i);
+      maxAction = i;
+    }
+  }
+  return maxAction;
 }
 
 double QLearner::GetMaxActionQVal(int state)
 {
-	int first_index = state * num_actions_;
-	int last_index = first_index + num_actions_;
-	double max = q_array_[first_index];
+  double maxQVal = QVal(state, 0);
+  
+  for (int i = 1; i < num_actions_; i++)
+  {
+    if (maxQVal < QVal(state, i))
+    {
+      maxQVal = QVal(state, i);
+    }
+  }
+  return maxQVal;
+}
 
-	for (int i = first_index; i < last_index; i++)
-	{
-		if (q_array_[i] > max)
-		{
-			max = q_array_[i];
-		}
-	}
+double QLearner::QVal(int state, int action)
+{
+  int vector_index = state * num_actions_ + action;
+  return q_array_[vector_index];
+}
 
-	return max;
+void QLearner::DecreaseTemp(void)
+{
+  temp_cnt_++;
+  temp_ = temp_const_ * pow(temp_alpha_, temp_cnt_);
+  if (temp_ < 0.05)
+    temp_ = 0.05;
 }
 
 std::string QLearner::PrintTable(void)
@@ -145,4 +159,15 @@ std::string QLearner::PrintTable(void)
 	}
 
 	return s;
+}
+
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "qtable_test");
+	ros::NodeHandle n;
+
+  QLearner* s = new QLearner(n);
+  ros::spin();
+
+  return 0;
 }
