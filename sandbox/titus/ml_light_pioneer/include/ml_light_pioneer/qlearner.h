@@ -16,23 +16,21 @@
 class QLearner
 {
 public:
-	QLearner(int num_actions, int num_states, double learning_rate,
-			double discount_factor, bool learn, int max_explore);
-	QLearner(int num_actions, int num_states, double learning_rate,
-			double discount_factor, bool learn, int max_explore,
-			std::vector<double> q_array_init);
+  QLearner(ros::NodeHandle nh);
 	void Update(double reward, int state, int state_p, int action);
 	int GetAction(int state);
+	void DecreaseTemp(void);
 	std::string PrintTable(void);
-
+	double QVal(int state, int action);
+	
 private:
-	int num_actions_, num_states_, size_array_, cnt_explore_, max_explore_;
-	double learning_rate_, discount_factor_;
-	bool learn_;
+  ros::NodeHandle n_;
+	int num_actions_, num_states_, size_array_, temp_cnt_;
+	double learning_rate_, discount_factor_, temp_const_, temp_alpha_, temp_;
 	std::vector<double> q_array_;
+	bool learn_;
 
 	void Init(void);
-	int GetRandAction(void);
 	int GetMaxAction(int state);
 	double GetMaxActionQVal(int state);
 };

@@ -9,7 +9,7 @@ class Actions
 {
 public:
   Actions(ros::NodeHandle nh);
-//  void Move(int action);
+  void Move(int action);
   int GetNumActions(void);
   
 private:  
