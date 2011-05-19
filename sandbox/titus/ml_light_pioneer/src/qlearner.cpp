@@ -161,6 +161,7 @@ std::string QLearner::PrintTable(void)
 	return s;
 }
 
+/*
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "qtable_test");
@@ -171,3 +172,4 @@ int main(int argc, char **argv)
 
   return 0;
 }
+*/

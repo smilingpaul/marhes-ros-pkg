@@ -22,7 +22,7 @@ void Actions::Move(int action)
 
   if (action >= 0 && action < num_actions_)
   {
-    vel_msg.linear.x = 0.5;
+    vel_msg.linear.x = 0.3;
     vel_msg.angular.z = ang_vels_[action];
     vel_pub_.publish(vel_msg);
   }
@@ -33,6 +33,7 @@ int Actions::GetNumActions(void)
 	return num_actions_;
 }
 
+/*
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "actions_test");
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
   int i = 0;
 
   Actions* r = new Actions(n);
-/*  ros::Rate loop_rate(1);
+  ros::Rate loop_rate(1);
 
   while(ros::ok())
   {
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
     ros::spinOnce();
     loop_rate.sleep();
   }
-*/
+
   return 0;
 }
-	
+*/
