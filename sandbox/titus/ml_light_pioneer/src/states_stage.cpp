@@ -88,7 +88,7 @@ void States::cb_tmr_state(const ros::TimerEvent& event)
   else
     state_ = i;
 
-  ROS_INFO("Direction: %f, State: %d", light_dir_, state_);
+  //ROS_INFO("Direction: %f, State: %d", light_dir_, state_);
 
   // publish light direction marker
   marker_.header.stamp = ros::Time::now();
@@ -104,6 +104,7 @@ void States::cb_odom(nav_msgs::Odometry msg)
   odom_msg_ = msg;
 }
 
+/*
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "states_test");
@@ -114,4 +115,4 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
+*/

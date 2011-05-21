@@ -52,7 +52,7 @@ window
 ( 
   size [ 745.000 448.000 ] 
 
-  rotate [ 0.000 0.000 ]
+  rotate [ 0.000 90.000 ]
   scale 28.806 
 )
 
@@ -62,7 +62,7 @@ floorplan
   name "square"
   bitmap "square.pgm"
   size [20.0 20.0 0.5]
-  pose [ 0.0 0.0 0 0.0 ]
+  pose [ 0.0 0.0 0.0 0.0 ]
 )
 
 # throw in a robot
