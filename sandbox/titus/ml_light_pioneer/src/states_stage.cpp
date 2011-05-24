@@ -54,7 +54,7 @@ int States::GetState(void)
 
 double States::GetReward(void)
 {
-	double reward = light_dir_last_ - light_dir_;
+	double reward = std::abs(light_dir_last_) - std::abs(light_dir_);
   light_dir_last_ = light_dir_;
 	return reward;
 }
@@ -103,15 +103,24 @@ void States::cb_odom(nav_msgs::Odometry msg)
 {
   odom_msg_ = msg;
 }
-
 /*
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "states_test");
 	ros::NodeHandle n;
+  double reward;
 
   States* s = new States(n);
-  ros::spin();
+  //ros::spin();
+  
+  ros::Rate loop_rate(10);
+  while(ros::ok())
+  {
+    reward = s->GetReward();
+    ROS_INFO("%f", reward);
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
 
   return 0;
 }

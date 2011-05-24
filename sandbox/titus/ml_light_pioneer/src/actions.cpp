@@ -9,28 +9,45 @@ Actions::Actions(ros::NodeHandle nh)
   n_private.param("ang_vel_lim", ang_vel_lim_, 1.0);
 
   vel_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+  tmr_vel_ = n_.createTimer(ros::Duration(1 / 20), &Actions::timer_cb, this);
   
   ang_vels_ = std::vector<double>(num_actions_);
   ang_inc_ = 2 * ang_vel_lim_ / (num_actions_ - 1);
   for (int i = 0; i < num_actions_; i++)
     ang_vels_[i] = -ang_vel_lim_ + i * ang_inc_;
+    
+  vel_msg_.linear.x = 0.0;
+  vel_msg_.angular.z = 0.0;
 }
 
 void Actions::Move(int action)
 {
-  geometry_msgs::Twist vel_msg;
-
   if (action >= 0 && action < num_actions_)
   {
-    vel_msg.linear.x = 0.3;
-    vel_msg.angular.z = ang_vels_[action];
-    vel_pub_.publish(vel_msg);
+    vel_msg_.linear.x = 0.3;
+    vel_msg_.angular.z = ang_vels_[action];
   }
+}
+
+void Actions::Start(void)
+{
+  publish_ = true;
+}
+
+void Actions::Stop(void)
+{
+  publish_ = false;
 }
 
 int Actions::GetNumActions(void)
 {
 	return num_actions_;
+}
+
+void Actions::timer_cb(const ros::TimerEvent& event)
+{
+  if (publish_)
+    vel_pub_.publish(vel_msg_);
 }
 
 /*

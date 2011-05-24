@@ -6,6 +6,7 @@
 #include "nav_msgs/Odometry.h"
 #include "visualization_msgs/Marker.h"
 #include "tf/tf.h"
+#include <cmath>
 
 class States
 {

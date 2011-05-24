@@ -9,6 +9,8 @@
 #define QLEARNER_H_
 
 #include "ros/ros.h"
+#include <XmlRpcValue.h>
+#include <XmlRpcException.h>
 #include <vector>
 #include <cstdlib>
 #include <time.h>
