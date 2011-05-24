@@ -10,6 +10,7 @@
 #include "ml_light_pioneer/actions.h"
 #include "ml_light_pioneer/qlearner.h"
 #include "ml_light_pioneer/states_stage.h"
+#include "ml_light_pioneer/learning_curve.h"
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/Pose.h"
 
@@ -22,7 +23,7 @@ private:
 	nav_msgs::Odometry odom_msg_;
 
 	bool move_stopped_, learn_;
-	int num_reps_, cnt_rep_, state_, state_p_, action_, mode_;
+	int num_reps_, cnt_rep_, state_, state_p_, action_, mode_, cnt_timesteps_;
 	double freq_, goal_radius_, start_radius_, reward_, goalx_, goaly_;
 	double bounds_[4];
 
@@ -31,6 +32,7 @@ private:
 	States* states_;
 	Actions* actions_;
 	QLearner* qobj_;
+	LearningCurve* lc_;
 	
   ros::Publisher move_pub_;
 	ros::Subscriber bool_sub_, odom_sub_;
@@ -64,11 +66,13 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
 
   srand ( time(NULL) );
 	cnt_rep_ = 0;
+	cnt_timesteps_ = 0;
 	mode_ = MODE_REP_START;
 
 	states_ = new States(n);
 	actions_ = new Actions(n);
 	qobj_ = new QLearner(n);
+	lc_ = new LearningCurve();
 
   move_pub_ = n_.advertise<geometry_msgs::Pose>("move_cmd", 1);
   bool_sub_ = n_.subscribe("move_done", 1, &Experiment::bool_cb, this);
@@ -98,6 +102,7 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 		actions_->Move(action_);
 		ROS_INFO("Starting rep: %d", cnt_rep_);
 		mode_ = MODE_REP;
+		cnt_timesteps_++;
 		break;
 	case MODE_REP:
     state_p_ = (int)states_->GetState();
@@ -114,6 +119,8 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 
     action_ = qobj_->GetAction(state_);
 		actions_->Move(action_);
+		
+		cnt_timesteps_++;
 
 		if (getDistance() < goal_radius_ || outOfBounds())
 		{
@@ -122,6 +129,8 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 			mode_ = MODE_RETURN;
 			ROS_INFO("Completed rep: %d, returning to start location", cnt_rep_); 
 			actions_->Stop();
+			lc_->UpdateSteps(cnt_timesteps_);
+			cnt_timesteps_ = 0;
 
       // Calculate next position
       rand_ang = 2.0 * M_PI * (rand() / ((double)RAND_MAX + 1));
@@ -151,6 +160,7 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 			mode_ = MODE_DONE;
 		break;
 	case MODE_DONE:
+	  lc_->ShowImage();
 	  exit(1);
 		break;
 	}

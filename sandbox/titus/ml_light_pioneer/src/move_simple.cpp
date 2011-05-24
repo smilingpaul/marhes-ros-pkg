@@ -43,7 +43,11 @@ void MoveSimple::cb_odom(nav_msgs::Odometry msg)
         head_err += 2 * M_PI;
         
       vel_msg.linear.x = 0.0;
-      vel_msg.angular.z = head_err;// / M_PI * max_ang_vel_;
+      vel_msg.angular.z = head_err;
+      if (vel_msg.angular.z > max_ang_vel_)
+        vel_msg.angular.z = max_ang_vel_;
+      if (vel_msg.angular.z < -max_ang_vel_)
+        vel_msg.angular.z = -max_ang_vel_;
       
       if (std::abs(head_err) < 0.05)
       {
@@ -71,6 +75,10 @@ void MoveSimple::cb_odom(nav_msgs::Odometry msg)
       
       vel_msg.linear.x = max_lin_vel_;
       vel_msg.angular.z = head_err;
+      if (vel_msg.angular.z > max_ang_vel_)
+        vel_msg.angular.z = max_ang_vel_;
+      if (vel_msg.angular.z < -max_ang_vel_)
+        vel_msg.angular.z = -max_ang_vel_;
       
       if (dist_err < 0.1)
       {
@@ -93,6 +101,10 @@ void MoveSimple::cb_odom(nav_msgs::Odometry msg)
         
       vel_msg.linear.x = 0.0;
       vel_msg.angular.z = head_err;
+      if (vel_msg.angular.z > max_ang_vel_)
+        vel_msg.angular.z = max_ang_vel_;
+      if (vel_msg.angular.z < -max_ang_vel_)
+        vel_msg.angular.z = -max_ang_vel_;
 
       if (std::abs(head_err) < 0.05)
       {
