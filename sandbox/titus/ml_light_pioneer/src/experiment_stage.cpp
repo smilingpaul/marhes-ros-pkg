@@ -47,7 +47,7 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
 {
 	ros::NodeHandle n_private("~");
 	n_private.param("num_reps", num_reps_, 100);
-	n_private.param("freq", freq_, 10.0);
+	n_private.param("freq", freq_, 2.0);
 	n_private.param("goal_radius", goal_radius_, 0.5);
   n_private.param("start_radius", start_radius_, 5.0);
   n_private.param("goalx", goalx_, 0.0);
@@ -56,7 +56,7 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
   n_private.param("bounds/tly", bounds_[1], 8.0);
   n_private.param("bounds/brx", bounds_[2], 8.0);
   n_private.param("bounds/bry", bounds_[3], -8.0);
-
+  
   if (n_private.hasParam("qarray"))
     learn_ = false;
   else
@@ -84,14 +84,15 @@ void Experiment::odom_cb(const nav_msgs::Odometry msg)
 void Experiment::bool_cb(const std_msgs::Bool msg)
 {
   if (move_stopped_ == false)
-    move_stopped_ = msg.data;
+    move_stopped_ = msg.data;  
 }
 
 void Experiment::timer_cb(const ros::TimerEvent& event)
-{
+{  
 	switch(mode_)
 	{
 	case MODE_REP_START:
+	  actions_->Start();
 		state_ = states_->GetState();
 		action_ = qobj_->GetAction(state_);
 		actions_->Move(action_);
@@ -120,10 +121,12 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 
 			mode_ = MODE_RETURN;
 			ROS_INFO("Completed rep: %d, returning to start location", cnt_rep_); 
+			actions_->Stop();
 
       // Calculate next position
-      rand_ang = 2.0 * M_PI * (rand() / (RAND_MAX + 1));
-      rand_orientation = 2.0 * M_PI * (rand() / (RAND_MAX + 1));
+      rand_ang = 2.0 * M_PI * (rand() / ((double)RAND_MAX + 1));
+      rand_orientation = 2.0 * M_PI * (rand() / ((double)RAND_MAX + 1));
+      ROS_INFO("Rand_Ang: %f, Rand orient: %f", rand_ang, rand_orientation);
       start_x = goalx_ + start_radius_ * cos(rand_ang);
       start_y = goaly_ + start_radius_ * sin(rand_ang);
       
@@ -148,6 +151,7 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 			mode_ = MODE_DONE;
 		break;
 	case MODE_DONE:
+	  exit(1);
 		break;
 	}
 }
@@ -173,14 +177,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	Experiment* e = new Experiment(n);
-	ros::Rate loop_rate(50);
-	
-	while(ros::ok())
-	{
-	  
-	  loop_rate.sleep();
-	}
-	//ros::spin();
+	ros::spin();
 
 	return 0;
 }

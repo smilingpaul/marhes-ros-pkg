@@ -21,12 +21,41 @@ QLearner::QLearner(ros::NodeHandle nh)
   if (n_private.hasParam("qarray"))
   {
     learn_ = false;
+    
     // Get the qtable
+    XmlRpc::XmlRpcValue qtable;
+	  n_private.getParam("qarray", qtable);
+	  if (qtable.getType() != XmlRpc::XmlRpcValue::TypeArray)
+		  ROS_ERROR("Error reading footsteps/x from config file.");
+		  
+    int size;
+		try
+		{
+			size = qtable.size();
+			
+			if (size != (num_states_ * num_actions_))
+			{
+				ROS_ERROR("Size of array does not match num_states * num_actions = %d,\
+				           exiting.", num_states_ * num_actions_);
+				exit(0);
+			}
+		} 
+		catch (const XmlRpc::XmlRpcException e)
+		{
+			ROS_ERROR("No table available, exiting.");
+			exit(0);
+		}
+
+		// create qarray set
+		for(int i=0; i < size; i++)
+		{
+			q_array_.push_back((double)qtable[i]);
+		}
   }
   else
   {
     learn_ = true;
-    double floor = -1, ceiling = 1, range = (ceiling - floor);
+    double floor = -0.1, ceiling = 0.1, range = (ceiling - floor);
     q_array_ = std::vector<double>(size_array_);
     for (int i = 0; i < size_array_; i++)
     {
@@ -34,7 +63,7 @@ QLearner::QLearner(ros::NodeHandle nh)
     }
   } 
   
-  ROS_INFO("%s", PrintTable().c_str()); 
+  //ROS_INFO("%s", PrintTable().c_str()); 
 }
 
 void QLearner::Update(double reward, int state, int state_p, int action)
