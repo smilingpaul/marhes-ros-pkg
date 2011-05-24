@@ -10,6 +10,7 @@
 #include "ml_light_pioneer/actions.h"
 #include "ml_light_pioneer/qlearner.h"
 #include "ml_light_pioneer/states.h"
+#include "ml_light_pioneer/learning_curve.h"
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/Pose.h"
 
@@ -22,7 +23,7 @@ private:
 	nav_msgs::Odometry odom_msg_;
 
 	bool move_stopped_, learn_;
-	int num_reps_, cnt_rep_, state_, state_p_, action_, mode_;
+	int num_reps_, cnt_rep_, state_, state_p_, action_, mode_, cnt_timesteps_;
 	double freq_, goal_radius_, start_radius_, reward_, goalx_, goaly_;
 	double bounds_[4];
 
@@ -31,6 +32,7 @@ private:
 	States* states_;
 	Actions* actions_;
 	QLearner* qobj_;
+	LearningCurve* lc_;
 	
   ros::Publisher move_pub_;
 	ros::Subscriber bool_sub_, odom_sub_;
@@ -47,16 +49,16 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
 {
 	ros::NodeHandle n_private("~");
 	n_private.param("num_reps", num_reps_, 100);
-	n_private.param("freq", freq_, 0.5);
+	n_private.param("freq", freq_, 2.0);
 	n_private.param("goal_radius", goal_radius_, 0.5);
   n_private.param("start_radius", start_radius_, 5.0);
   n_private.param("goalx", goalx_, 0.0);
   n_private.param("goaly", goaly_, 0.0);
-  n_private.param("bounds/tlx", bounds_[0], -10.0);
-  n_private.param("bounds/tly", bounds_[1], 10.0);
-  n_private.param("bounds/brx", bounds_[2], 10.0);
-  n_private.param("bounds/bry", bounds_[3], -10.0);
-
+  n_private.param("bounds/tlx", bounds_[0], -8.0);
+  n_private.param("bounds/tly", bounds_[1], 8.0);
+  n_private.param("bounds/brx", bounds_[2], 8.0);
+  n_private.param("bounds/bry", bounds_[3], -8.0);
+  
   if (n_private.hasParam("qarray"))
     learn_ = false;
   else
@@ -64,11 +66,13 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
 
   srand ( time(NULL) );
 	cnt_rep_ = 0;
+	cnt_timesteps_ = 0;
 	mode_ = MODE_REP_START;
 
 	states_ = new States(n);
 	actions_ = new Actions(n);
 	qobj_ = new QLearner(n);
+	lc_ = new LearningCurve();
 
   move_pub_ = n_.advertise<geometry_msgs::Pose>("move_cmd", 1);
   bool_sub_ = n_.subscribe("move_done", 1, &Experiment::bool_cb, this);
@@ -84,19 +88,21 @@ void Experiment::odom_cb(const nav_msgs::Odometry msg)
 void Experiment::bool_cb(const std_msgs::Bool msg)
 {
   if (move_stopped_ == false)
-    move_stopped_ = msg.data;
+    move_stopped_ = msg.data;  
 }
 
 void Experiment::timer_cb(const ros::TimerEvent& event)
-{
+{  
 	switch(mode_)
 	{
 	case MODE_REP_START:
+	  actions_->Start();
 		state_ = states_->GetState();
 		action_ = qobj_->GetAction(state_);
 		actions_->Move(action_);
 		ROS_INFO("Starting rep: %d", cnt_rep_);
 		mode_ = MODE_REP;
+		cnt_timesteps_++;
 		break;
 	case MODE_REP:
     state_p_ = (int)states_->GetState();
@@ -113,6 +119,8 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 
     action_ = qobj_->GetAction(state_);
 		actions_->Move(action_);
+		
+		cnt_timesteps_++;
 
 		if (getDistance() < goal_radius_ || outOfBounds())
 		{
@@ -120,10 +128,14 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 
 			mode_ = MODE_RETURN;
 			ROS_INFO("Completed rep: %d, returning to start location", cnt_rep_); 
+			actions_->Stop();
+			lc_->UpdateSteps(cnt_timesteps_);
+			cnt_timesteps_ = 0;
 
       // Calculate next position
-      rand_ang = rand() / (RAND_MAX + 1) * 2 * M_PI;
-      rand_orientation = rand() / (RAND_MAX + 1) * 2 * M_PI;
+      rand_ang = 2.0 * M_PI * (rand() / ((double)RAND_MAX + 1));
+      rand_orientation = 2.0 * M_PI * (rand() / ((double)RAND_MAX + 1));
+      ROS_INFO("Rand_Ang: %f, Rand orient: %f", rand_ang, rand_orientation);
       start_x = goalx_ + start_radius_ * cos(rand_ang);
       start_y = goaly_ + start_radius_ * sin(rand_ang);
       
@@ -148,6 +160,8 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 			mode_ = MODE_DONE;
 		break;
 	case MODE_DONE:
+	  lc_->ShowImage();
+	  exit(1);
 		break;
 	}
 }

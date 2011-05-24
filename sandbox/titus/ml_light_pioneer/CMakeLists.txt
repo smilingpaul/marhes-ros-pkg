@@ -33,6 +33,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(states_test src/states.cpp)
 #rosbuild_add_executable(actions_test src/actions.cpp)
 #rosbuild_add_executable(qtable_test src/qlearner.cpp)
+#rosbuild_add_executable(learning_curve_test src/learning_curve.cpp)
+#target_link_libraries(learning_curve_test mgl)
+
 rosbuild_add_executable(move_simple src/move_simple.cpp)
-rosbuild_add_executable(experiment src/experiment.cpp src/states.cpp src/actions.cpp src/qlearner.cpp)
-rosbuild_add_executable(experiment_stage src/experiment_stage.cpp src/states_stage.cpp src/actions.cpp src/qlearner.cpp)
+
+rosbuild_add_executable(experiment src/experiment.cpp src/states.cpp src/actions.cpp src/qlearner.cpp src/learning_curve.cpp)
+target_link_libraries(experiment mgl)
+
+rosbuild_add_executable(experiment_stage src/experiment_stage.cpp src/states_stage.cpp src/actions.cpp src/qlearner.cpp src/learning_curve.cpp)
+target_link_libraries(experiment_stage mgl)
