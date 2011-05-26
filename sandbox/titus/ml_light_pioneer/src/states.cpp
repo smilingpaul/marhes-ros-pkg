@@ -9,7 +9,7 @@ States::States(ros::NodeHandle nh)
   n_private.param("xdist", xdist_, 8 / 0.0254);
   n_private.param("ydist", ydist_, 6 / 0.0254);
 
-  sub_odom_ = n_.subscribe("odom", 1, &States::cb_odom, this);
+  sub_odom_ = n_.subscribe("base_pose_ground_truth", 1, &States::cb_odom, this);
   sub_flls_ = n_.subscribe("flls", 1, &States::cb_flls, this);
   sub_frls_ = n_.subscribe("frls", 1, &States::cb_frls, this);
   sub_rlls_ = n_.subscribe("rlls", 1, &States::cb_rlls, this);
@@ -93,8 +93,8 @@ void States::cb_tmr_state(const ros::TimerEvent& event)
 
   // publish light direction marker
   marker_.header.stamp = ros::Time::now();
-  marker_.pose.position.x = 0;
-  marker_.pose.position.y = 0;
+  marker_.pose.position.x = odom_msg_.pose.pose.position.x;
+  marker_.pose.position.y = odom_msg_.pose.pose.position.y;
   marker_.pose.orientation = tf::createQuaternionMsgFromYaw(light_dir_);
   vis_pub_.publish( marker_ );
 }
