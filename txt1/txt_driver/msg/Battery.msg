@@ -1,5 +1,4 @@
 Header header
-float64 cell1
-float64 cell2
-float64 cell3
+float64 batt1
+float64 batt2
 duration expected_time

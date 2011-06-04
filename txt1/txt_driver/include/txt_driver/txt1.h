@@ -35,7 +35,7 @@ public:
 	virtual ~TXT1();
 	void pubOdom(double x, double y, double theta, double vx,
 			double vtheta);
-	void pubBattery(double cell1, double cell2, double cell3);
+	void pubBattery(double batt1, double batt2);
 private:
 	ros::Subscriber cmd_vel_sub_;
 	ros::Subscriber comb_odom_sub_;
