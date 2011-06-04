@@ -5,10 +5,9 @@ extern TXT1* p;
 
 Packet::Packet()
 {
-	dataNum = 0;
-	droppedPkts = 0;
-	totalPkts = 0;
-	memset(packet,0,sizeof(packet));
+	dataNum_ = 0;
+	droppedPkts_ = 0;
+	totalPkts_ = 0;
 }
 
 Packet::~Packet()
@@ -20,7 +19,7 @@ Packet::~Packet()
  * Name: 	Build
  * Inputs:	data - The char array of data bytes
  *          dataSize - The size the the char array of data bytes
- * Outputs: int - 0 for completed ok, 1 for error
+ * Outputs: int32_t - 0 for completed ok, 1 for error
  * 
  * Description: This method builds a data packet to be sent to the TXT1.  It
  *              attaches a header of two bytes to the beginning and then a byte 
@@ -29,24 +28,20 @@ Packet::~Packet()
  *              to the end with the bytes in reverse order like the Pioneers.
  ******************************************************************************/
 
-int Packet::Build(unsigned char *data, unsigned char dataSize)
+uint8_t Packet::Build(uint8_t *data, uint8_t dataSize, uint8_t command)
 {
-	short checksum;
+	uint16_t checksum;
 
-	packetSize = dataSize + 5;
+	msg_.var.header.var.start_byte_1 = 0xFA;   // Write 2 header bytes
+  msg_.var.header.var.start_byte_2 = 0xFB;
+	msg_.var.header.var.length = dataSize;     // Write the length of packet
+  msg_.var.header.var.command = command;
 
-	packet[0] = 0xFA;				// Write 2 header bytes
-    packet[1] = 0xFB;
+  memcpy( &msg_.var.data[0], data, dataSize ); // Copy all the data bytes to packet
 
-	packet[2] = dataSize + 2;		// Write the length of packet, which is
-									// everything from the command byte to the
-                                    // checksum
-
-  	memcpy( &packet[3], data, dataSize );  	// Copy all the data bytes to packet
-
-	checksum = CalcChkSum();				// Calculate the checksum
-	packet[3+dataSize] = checksum >> 8;		// Put the checksum bytes in
-	packet[3+dataSize+1] = checksum & 0xFF;	// reverse order
+	checksum = CalcChkSum();				             // Calculate the checksum
+	msg_.var.data[dataSize] = checksum >> 8;		 // Put the checksum bytes in
+	msg_.var.data[dataSize+1] = checksum & 0xFF; // reverse order
 
 	if (!Check()) {
 		ROS_ERROR("Checksum malfunction.");
@@ -58,123 +53,117 @@ int Packet::Build(unsigned char *data, unsigned char dataSize)
 
 /******************************************************************************
  * Name: 	BuildCmdVel
- * Inputs:	msg - The Cmd Vel msg from the subscriber
- * Outputs: int - 0 is success, 1 is failure
+ * Inputs:	msg_ - The Cmd Vel msg_ from the subscriber
+ * Outputs: int32_t - 0 is success, 1 is failure
  *
- * Description: This method assembles the CmdVel msg into a packet to send to
+ * Description: This method assembles the CmdVel msg_ int32_to a packet to send to
  *              the TXT1.
  *
- * 5 Byte Msg - CMD = 103 = 0x67
+ * 5 Byte msg_ - CMD = 103 = 0x67
  * CMD | FOR_VEL | ROT_VEL
  *----------------------------
  * 1B  |    2B   |   2B
  ******************************************************************************/
 
-int Packet::BuildCmdVel(const geometry_msgs::Twist &msg)
+uint8_t Packet::BuildCmdVel(const geometry_msgs::Twist &msg)
 {
-	unsigned char data[SIZE_VEL] = {0};
-	short vel = 0;
+	uint8_t data[SIZE_VEL] = {0};
+	int16_t vel = 0;
 
-	data[0] = CMD_VEL;			        	// Write the VEL command
+	vel = (int16_t)(msg.linear.x * 1000);		// Write the linear velocity
+	data[0] = (uint8_t)(vel >> 8);
+	data[1] = (uint8_t)(vel & 0x00FF);
 
-	vel = (short)(msg.linear.x * 1000);		// Write the linear velocity
-	data[1] = (unsigned char)(vel >> 8);
-	data[2] = (unsigned char)(vel & 0x00FF);
+	vel = (int16_t)(msg.angular.z * 1000);	// Write the angular velocity
+	data[2] = (uint8_t)(vel >> 8);
+	data[3] = (uint8_t)(vel & 0x00FF);
 
-	vel = (short)(msg.angular.z * 1000);	// Write the angular velocity
-	data[3] = (unsigned char)(vel >> 8);
-	data[4] = (unsigned char)(vel & 0x00FF);
-
-	Build(data, SIZE_VEL);				// Add the header and checksum
+	Build(data, SIZE_VEL, CMD_VEL);         // Add the header and checksum
 	return(0);
 }
 
-int Packet::BuildCombOdom(const nav_msgs::Odometry &msg)
+uint8_t Packet::BuildCombOdom(const nav_msgs::Odometry &msg)
 {
-	unsigned char data[SIZE_ODOM_COMB] = {0};
-	int temp;
+	uint8_t data[SIZE_ODOM_COMB] = {0};
+	int32_t temp;
 
-	data[0] = CMD_ODOM_COMB;
+	temp = (int32_t)(msg.pose.pose.position.x * 1000);
+	data[0] = (uint8_t)(temp >> 24);
+	data[1] = (uint8_t)(temp >> 16);
+	data[2] = (uint8_t)(temp >> 8);
+	data[3] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(msg.pose.pose.position.x * 1000);
-	data[1] = (unsigned char)(temp >> 24);
-	data[2] = (unsigned char)(temp >> 16);
-	data[3] = (unsigned char)(temp >> 8);
-	data[4] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(msg.pose.pose.position.y * 1000);
+	data[4] = (uint8_t)(temp >> 24);
+	data[5] = (uint8_t)(temp >> 16);
+	data[6] = (uint8_t)(temp >> 8);
+	data[7] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(msg.pose.pose.position.y * 1000);
-	data[5] = (unsigned char)(temp >> 24);
-	data[6] = (unsigned char)(temp >> 16);
-	data[7] = (unsigned char)(temp >> 8);
-	data[8] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(tf::getYaw(msg.pose.pose.orientation) * 1000);
+	data[8] = (uint8_t)(temp >> 24);
+	data[9] = (uint8_t)(temp >> 16);
+	data[10] = (uint8_t)(temp >> 8);
+	data[11] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(tf::getYaw(msg.pose.pose.orientation) * 1000);
-	data[9] = (unsigned char)(temp >> 24);
-	data[10] = (unsigned char)(temp >> 16);
-	data[11] = (unsigned char)(temp >> 8);
-	data[12] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(msg.twist.twist.linear.x * 1000);
+	data[12] = (uint8_t)(temp >> 24);
+	data[13] = (uint8_t)(temp >> 16);
+	data[14] = (uint8_t)(temp >> 8);
+	data[15] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(msg.twist.twist.linear.x * 1000);
-	data[13] = (unsigned char)(temp >> 24);
-	data[14] = (unsigned char)(temp >> 16);
-	data[15] = (unsigned char)(temp >> 8);
-	data[16] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(msg.twist.twist.angular.z * 1000);
+	data[16] = (uint8_t)(temp >> 24);
+	data[17] = (uint8_t)(temp >> 16);
+	data[18] = (uint8_t)(temp >> 8);
+	data[19] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(msg.twist.twist.angular.z * 1000);
-	data[17] = (unsigned char)(temp >> 24);
-	data[18] = (unsigned char)(temp >> 16);
-	data[19] = (unsigned char)(temp >> 8);
-	data[20] = (unsigned char)(temp & 0x000000FF);
-
-	Build(data, SIZE_ODOM_COMB);
+	Build(data, SIZE_ODOM_COMB, CMD_ODOM_COMB);
 
 	return(0);
 }
 
-int Packet::BuildPidTx(const txt_driver::pid::Request &req)
+uint8_t Packet::BuildPidTx(const txt_driver::pid::Request &req)
 {
-	unsigned char data[SIZE_PID_TX] = {0};
-	int temp;
+	uint8_t data[SIZE_PID_TX] = {0};
+	int32_t temp;
 
-	data[0] = CMD_PID_TX;
+	temp = (int32_t)(req.kp_lv);
+	data[0] = (uint8_t)(temp >> 24);
+	data[1] = (uint8_t)(temp >> 16);
+	data[2] = (uint8_t)(temp >> 8);
+	data[3] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(req.kp_lv);
-	data[1] = (unsigned char)(temp >> 24);
-	data[2] = (unsigned char)(temp >> 16);
-	data[3] = (unsigned char)(temp >> 8);
-	data[4] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(req.ki_lv);
+	data[4] = (uint8_t)(temp >> 24);
+	data[5] = (uint8_t)(temp >> 16);
+	data[6] = (uint8_t)(temp >> 8);
+	data[7] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(req.ki_lv);
-	data[5] = (unsigned char)(temp >> 24);
-	data[6] = (unsigned char)(temp >> 16);
-	data[7] = (unsigned char)(temp >> 8);
-	data[8] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(req.kd_lv);
+	data[8] = (uint8_t)(temp >> 24);
+	data[9] = (uint8_t)(temp >> 16);
+	data[10] = (uint8_t)(temp >> 8);
+	data[11] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(req.kd_lv);
-	data[9] = (unsigned char)(temp >> 24);
-	data[10] = (unsigned char)(temp >> 16);
-	data[11] = (unsigned char)(temp >> 8);
-	data[12] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(req.kp_av);
+	data[12] = (uint8_t)(temp >> 24);
+	data[13] = (uint8_t)(temp >> 16);
+	data[14] = (uint8_t)(temp >> 8);
+	data[15] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(req.kp_av);
-	data[13] = (unsigned char)(temp >> 24);
-	data[14] = (unsigned char)(temp >> 16);
-	data[15] = (unsigned char)(temp >> 8);
-	data[16] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(req.ki_av);
+	data[16] = (uint8_t)(temp >> 24);
+	data[17] = (uint8_t)(temp >> 16);
+	data[18] = (uint8_t)(temp >> 8);
+	data[19] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(req.ki_av);
-	data[17] = (unsigned char)(temp >> 24);
-	data[18] = (unsigned char)(temp >> 16);
-	data[19] = (unsigned char)(temp >> 8);
-	data[20] = (unsigned char)(temp & 0x000000FF);
+	temp = (int32_t)(req.kd_av);
+	data[20] = (uint8_t)(temp >> 24);
+	data[21] = (uint8_t)(temp >> 16);
+	data[22] = (uint8_t)(temp >> 8);
+	data[23] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int)(req.kd_av);
-	data[21] = (unsigned char)(temp >> 24);
-	data[22] = (unsigned char)(temp >> 16);
-	data[23] = (unsigned char)(temp >> 8);
-	data[24] = (unsigned char)(temp & 0x000000FF);
-
-	Build(data, SIZE_PID_TX);
+	Build(data, SIZE_PID_TX, CMD_PID_TX);
 
 	return(0);
 }
@@ -182,34 +171,34 @@ int Packet::BuildPidTx(const txt_driver::pid::Request &req)
 /******************************************************************************
  * Name: 	CalcChkSum()
  * Inputs:	None
- * Outputs: int - The calculated checksum
+ * Outputs: int32_t - The calculated checksum
  * 
  * Description: This method calculates the checksum according to the Pioneer 
  *              documentation.
  ******************************************************************************/
 
-int Packet::CalcChkSum()
+int32_t Packet::CalcChkSum()
 {
-	unsigned char *buffer = &packet[3];
-  	int c = 0;
-  	int n;
+  uint8_t *buffer = &msg_.var.header.var.command;
+  int32_t c = 0;
+  int32_t n;
 
-  	n = packetSize - 5;							// Get the number of data bytes
+  n = msg_.var.header.var.length + 1;				// Get the number of data bytes
 	
 	// For the even number of bytes, successively adding data byte pairs (high 
 	// byte first) to a running checksum (initially zero), disregarding sign and 
 	// overflow.
-  	while (n > 1) 
+  while (n > 1) 
 	{
     	c+= (*(buffer)<<8) | *(buffer+1);	// Add byte pair to checksum
     	c = c & 0xffff;						// Disregard overflow
-    	n -= 2;								// Calc next pointer
+    	n -= 2;								// Calc next point32_ter
     	buffer += 2;
   	}
 	
 	// If there are an odd number of data bytes, the last byte is XORed to the 
 	// low-order byte of the checksum.
-  	if (n>0) c = c ^ (int)*(buffer++);
+  	if (n>0) c = c ^ (int32_t)*(buffer++);
 
   	return(c);
 }
@@ -229,7 +218,7 @@ bool Packet::Check()
 
 	// Compare the calculated checksum with the packet's checksum
   	chksum = CalcChkSum();
-  	if ( chksum == ((packet[packetSize-2] << 8) | packet[packetSize-1]))
+  	if ( chksum == ((msg_.var.data[msg_.var.header.var.length] << 8) | (msg_.var.data[msg_.var.header.var.length + 1])))
    		return(true);
 
   	return(false);
@@ -238,25 +227,25 @@ bool Packet::Check()
 /******************************************************************************
  * Name: 	Send()
  * Inputs:	port - The serial port handle to send on
- * Outputs: int - 0 is success, 1 is failure
+ * Outputs: int32_t - 0 is success, 1 is failure
  * 
  * Description: This method sends the assembled packet on the given serial port.
  ******************************************************************************/
 
 void Packet::Send( Serial::Serial* port )
 {
-	int cnt = 0;
+	int32_t cnt = 0;
 
 	try
 	{
-		cnt = port->Write(packet, packetSize);
+		cnt = port->Write(msg_.bytes, msg_.var.header.var.length + HEADER_SIZE	+ CHKSUM_SIZE);
 	}
 	catch (ros::Exception& e)
 	{
 		ROS_ERROR("Failure to send. Error: %s", e.what());
 	}
 
-	if (cnt != packetSize)
+	if (cnt != msg_.var.header.var.length + HEADER_SIZE	+ CHKSUM_SIZE)
 	{
 		ROS_ERROR("Not all bytes sent.");
 	}
@@ -264,120 +253,82 @@ void Packet::Send( Serial::Serial* port )
 
 void Packet::Receive( Serial::Serial * port )
 {
-	unsigned char tempByte;
-
-	while ((dataNum < MAX_PACKET_SIZE) && (port->Read(&tempByte, 1) > 0))
+	while ((dataNum_ < MAX_PACKET_SIZE) && (port->Read(&msg_.bytes[dataNum_], 1) > 0))
 	{
-		if (dataNum < 3)						// Read the packet header
+		if (dataNum_ == 0)						// Read the packet header
 		{
-			if (packet[0] == 0xFA && packet[1] == 0xFB)
-			{
-				dataNum = 3;
-				packet[2] = tempByte;
-				packetSize = packet[2] + 3;
-			}
-			else
-			{
-				packet[0] = packet[1];
-				packet[1] = tempByte;
-			}
+		  if (msg_.var.header.var.start_byte_1 = 0xFA)
+		  {
+		    dataNum_++;
+		  }
+		}
+		else if (dataNum_ == 1)
+		{
+		  if (msg_.var.header.var.start_byte_2 = 0xFB)
+		  {
+		    dataNum_++;
+		  }
+		  else
+		  {
+		    dataNum_ = 0;
+		  }
 		}
 		else									// Get the rest of the packet
 		{
-			packet[dataNum] = tempByte;
-			dataNum++;
+        dataNum_++;
+        
+      // If last byte, process cksum               
+      if(dataNum_ >= (HEADER_SIZE + msg_.var.header.var.length + CHKSUM_SIZE))
+      {                                 // then data.
+        if(Check())
+        {
+          ProcessData();
+          totalPkts_++;
+          dataNum_ = 0;
+        }
+        else
+        {
+          droppedPkts_++;
+          totalPkts_++;
+          ROS_INFO("Dropped Packets = %d / %d", droppedPkts_, totalPkts_);
+          dataNum_ = 0;
+        }
+      }
+    }		 
+  }
 
-			if (dataNum >= (packet[2] + 3))
-			{
-				if (Check())
-				{
-					ProcessData();
-					totalPkts++;
-				}
-				else
-				{
-					droppedPkts++;
-					totalPkts++;
-					ROS_INFO("Dropped Packets = %d / %d", droppedPkts, totalPkts);
-					ROS_INFO("Packet: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-							packet[0],packet[1],packet[2],packet[3],packet[4],packet[5],
-							packet[6],packet[7],packet[8],packet[9],packet[10],packet[11],packet[12],
-							packet[13],packet[14],packet[15],packet[16],packet[17],packet[18],packet[19],packet[20],
-							packet[21],packet[22],packet[23],packet[24],packet[25]);
-				}
-
-				dataNum = 0;
-				memset(packet,0,sizeof(packet));
-			}
-		}
-	}
-
-	if (dataNum >= MAX_PACKET_SIZE)
-		dataNum = 0;
+	if (dataNum_ >= MAX_PACKET_SIZE)
+		dataNum_ = 0;
 }
 
 void Packet::ProcessData()
 {
-	double xpos, ypos, theta, linvel, angvel, cell1, cell2, cell3;
+	double xpos, ypos, theta, linvel, angvel, batt1, batt2;
 
-	switch(packet[3])
+	switch(msg_.var.header.var.command)
 	{
 		case CMD_ODOM_ENC:
-			if (packetSize - 5 != SIZE_ODOM_ENC)
+			if (msg_.var.header.var.length != SIZE_ODOM_ENC)
 				break;
 
-			xpos = (double)((packet[4] << 24) + (packet[5] << 16) + (packet[6] << 8) + packet[7]) / 1000;
-			ypos = (double)((packet[8] << 24) + (packet[9] << 16) + (packet[10] << 8) + packet[11]) / 1000;
-			theta = (double)((packet[12] << 24) + (packet[13] << 16) + (packet[14] << 8) + packet[15]) / 1000;
-			linvel = (double)((packet[16] << 24) + (packet[17] << 16) + (packet[18] << 8) + packet[19]) / 1000;
-			angvel = (double)((packet[20] << 24) + (packet[21] << 16) + (packet[22] << 8) + packet[23]) / 1000;
-			//			ROS_INFO("Linvel: %d, %d, %d, %d", packet[16], packet[17], packet[18], packet[19]);
-//			ROS_INFO("Packet: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-//					packet[0],packet[1],packet[2],packet[3],packet[4],packet[5],
-//					packet[6],packet[7],packet[8],packet[9],packet[10],packet[11],packet[12],
-//					packet[13],packet[14],packet[15],packet[16],packet[17],packet[18],packet[19],packet[20],
-//					packet[21],packet[22],packet[23],packet[24],packet[25]);
+			xpos = (double)((msg_.var.data[0] << 24) + (msg_.var.data[1] << 16) + (msg_.var.data[2] << 8) + msg_.var.data[3]) / 1000;
+			ypos = (double)((msg_.var.data[4] << 24) + (msg_.var.data[5] << 16) + (msg_.var.data[6] << 8) + msg_.var.data[7]) / 1000;
+			theta = (double)((msg_.var.data[8] << 24) + (msg_.var.data[9] << 16) + (msg_.var.data[10] << 8) + msg_.var.data[11]) / 1000;
+			linvel = (double)((msg_.var.data[12] << 24) + (msg_.var.data[13] << 16) + (msg_.var.data[14] << 8) + msg_.var.data[15]) / 1000;
+			angvel = (double)((msg_.var.data[16] << 24) + (msg_.var.data[17] << 16) + (msg_.var.data[18] << 8) + msg_.var.data[19]) / 1000;
 			p->pubOdom(xpos, ypos, theta, linvel, angvel);
 			break;
 		case CMD_BATTERY:
-			ROS_INFO("%d,%d,%d,%d,%d,%d",packet[4],packet[5],packet[6],packet[7],packet[8],packet[9]);
-
-			if (packetSize - 5 != SIZE_BATTERY)
+			if (msg_.var.header.var.length != SIZE_BATTERY)
 				break;
 
-			cell1 = (double)((packet[4] << 8) + packet[5]) / 1000;
-			cell2 = (double)((packet[6] << 8) + packet[7]) / 1000;
-			cell3 = (double)((packet[8] << 8) + packet[9]) / 1000;
+			batt1 = (double)((msg_.var.data[0] << 8) + msg_.var.data[1]) / 1000;
+			batt2 = (double)((msg_.var.data[2] << 8) + msg_.var.data[3]) / 1000;
 
-
-
-			p->pubBattery(cell1, cell2, cell3);
+			p->pubBattery(batt1, batt2);
 			break;
 		default:
 
 			break;
 	}
-}
-
-void Packet::Print()
-{
-  if (packet) {
-    ROS_INFO("\"");
-    for(int i=0;i<packetSize;i++) {
-      ROS_INFO("%u ", packet[i]);
-    }
-    ROS_INFO("\"");
-  }
-}
-
-
-void Packet::PrintHex()
-{
-  if (packet) {
-    ROS_INFO("\"");
-    for(int i=0;i<packetSize;i++) {
-      ROS_INFO("0x%.2x ", packet[i]);
-    }
-    ROS_INFO("\"");
-  }
 }

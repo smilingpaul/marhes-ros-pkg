@@ -151,14 +151,12 @@ void TXT1::pubOdom(double x, double y, double theta, double vx, double vtheta)
     odom_pub_.publish(odom_msg_);
 }
 
-void TXT1::pubBattery(double cell1, double cell2, double cell3)
+void TXT1::pubBattery(double batt1, double batt2)
 {
 	battery_msg_.header.stamp = ros::Time::now();
 	battery_msg_.header.frame_id = "battery";
-	battery_msg_.cell1 = cell1;
-	battery_msg_.cell2 = cell2;
-	battery_msg_.cell3 = cell3;
-
+	battery_msg_.batt1 = batt1;
+	battery_msg_.batt2 = batt2;
 	battery_pub_.publish(battery_msg_);
 }
 
@@ -178,20 +176,20 @@ TXT1 *p;
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "TXT1");
-	ros::NodeHandle n;
+  ros::init(argc, argv, "TXT1");
+  ros::NodeHandle n;
 
-	p = new TXT1(n);
-	Packet rxPacket;
-	ros::Rate loop_rate(100);
+  p = new TXT1(n);
+  Packet rxPacket;
+  ros::Rate loop_rate(100);
 
-  	while (ros::ok())
-  	{
-  		rxPacket.Receive(p->my_serial_);
+  while (ros::ok())
+  {
+    rxPacket.Receive(p->my_serial_);
 
-      	ros::spinOnce();
-    	loop_rate.sleep();
-  	}
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
 
-  	return 0;
+  return 0;
 }
