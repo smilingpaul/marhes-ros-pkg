@@ -15,6 +15,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	std::string def = "/dev/ttyUSB0";
 	n_private.param("port", port_, def);
 	COMB_ODOM_CNT_LIMIT_ = 2;
+	shutdown_ = false;
 
 	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
 //	comb_odom_sub_ = n_.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
@@ -27,7 +28,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	battery_pub_ = n_.advertise<txt_driver::Battery>("/battery", 50);
 
 	pid_srv_ = n_.advertiseService("/pid_change", &TXT1::pidSrvCB, this);
-
+  shutdown_srv_ = n_.advertiseService("/shutdown_computer", &TXT1::shutdownSrvCB, this);
 
 	// Added for testing
 	comb_odom_msg_.header.stamp = ros::Time::now();
@@ -172,6 +173,14 @@ bool TXT1::pidSrvCB(txt_driver::pid::Request& request, txt_driver::pid::Response
 	return true;
 }
 
+bool TXT1::shutdownSrvCB(txt_driver::shutdown::Request& request, txt_driver::shutdown::Response& response)
+{
+  shutdown_ = true;
+  ros::shutdown();
+  response.result = true;
+  return true;
+}
+
 TXT1 *p;
 
 int main(int argc, char **argv)
@@ -190,6 +199,12 @@ int main(int argc, char **argv)
     ros::spinOnce();
     loop_rate.sleep();
   }
+  
+  // Do this to make sure the computer shuts down when batteries are bad
+  // Modify your /etc/sudoers file by adding a line like this:-
+  // %admin ALL = NOPASSWD: /sbin/shutdown
+  if (p->shutdown_)
+    system("sudo shutdown -h now");
 
   return 0;
 }
