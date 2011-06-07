@@ -6,6 +6,7 @@
 #include "txt_driver/serial.h"
 #include "txt_driver/Battery.h"
 #include "txt_driver/pid.h"
+#include "txt_driver/pwm.h"
 #include "txt_driver/shutdown.h"
 
 #include "geometry_msgs/Twist.h"
@@ -30,6 +31,7 @@ public:
 	txt_driver::Battery battery_msg_;
 	tf::TransformBroadcaster odom_broadcaster_;
 	txt_driver::pid::Request pid_req_;
+	txt_driver::pwm::Request pwm_req_;
 
   bool shutdown_;
 	Serial::Serial * my_serial_;
@@ -48,6 +50,7 @@ private:
 	ros::Timer comb_odom_tmr_;
 	ros::ServiceServer pid_srv_;
 	ros::ServiceServer shutdown_srv_;
+	ros::ServiceServer pwm_srv_;
 
 	ros::NodeHandle n_;
 	std::string port_;
@@ -62,6 +65,7 @@ private:
 	void combOdomCB(const nav_msgs::OdometryConstPtr &msg);
 	void combOdomTmrCB(const ros::TimerEvent& e);
 	bool pidSrvCB(txt_driver::pid::Request& request, txt_driver::pid::Response& response);
+	bool pwmSetValsCB(txt_driver::pwm::Request& request, txt_driver::pwm::Response& response);
 	bool shutdownSrvCB(txt_driver::shutdown::Request& request, txt_driver::shutdown::Response& response);
 };
 #endif

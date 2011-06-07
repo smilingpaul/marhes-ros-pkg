@@ -29,6 +29,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 
 	pid_srv_ = n_.advertiseService("/pid_change", &TXT1::pidSrvCB, this);
   shutdown_srv_ = n_.advertiseService("/shutdown_computer", &TXT1::shutdownSrvCB, this);
+  pwm_srv_ = n_.advertiseService("/pwm_change", &TXT1::pwmSetValsCB, this);
 
 	// Added for testing
 	comb_odom_msg_.header.stamp = ros::Time::now();
@@ -171,6 +172,18 @@ bool TXT1::pidSrvCB(txt_driver::pid::Request& request, txt_driver::pid::Response
 
 	response.result = true;
 	return true;
+}
+
+bool TXT1::pwmSetValsCB(txt_driver::pwm::Request& request, txt_driver::pwm::Response& response)
+{
+  pwm_req_ = request;
+  
+  Packet packet;
+  packet.BuildPWMTx(request);
+  packet.Send(my_serial_);
+  
+  response.result = true;
+  return true;
 }
 
 bool TXT1::shutdownSrvCB(txt_driver::shutdown::Request& request, txt_driver::shutdown::Response& response)
