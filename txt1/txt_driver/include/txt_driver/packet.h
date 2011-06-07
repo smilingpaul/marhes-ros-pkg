@@ -5,6 +5,7 @@
 #include "txt_driver/serial.h"
 #include "txt_driver/txt1.h"
 #include "txt_driver/pid.h"
+#include "txt_driver/pwm.h"
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
 
@@ -23,9 +24,9 @@ class Packet
 {
 	private:
 		typedef enum {CMD_VEL = 103, CMD_ODOM_ENC = 104, CMD_ODOM_COMB = 105,
-			CMD_BATTERY = 106, CMD_PID_TX = 107} COMMANDS;
+			CMD_BATTERY = 106, CMD_PID_TX = 107, CMD_PWM_TX = 108} COMMANDS;
 		typedef enum {SIZE_VEL = 4, SIZE_ODOM_ENC = 20, SIZE_ODOM_COMB = 20,
-			SIZE_BATTERY = 4, SIZE_PID_TX = 24} SIZES;
+			SIZE_BATTERY = 4, SIZE_PID_TX = 24, SIZE_PWM_TX = 12} SIZES;
 			
     typedef struct {
       uint8_t start_byte_1;
@@ -64,6 +65,7 @@ class Packet
     uint8_t BuildCmdVel(const geometry_msgs::Twist &msg);
     uint8_t BuildCombOdom(const nav_msgs::Odometry &msg);
     uint8_t BuildPidTx(const txt_driver::pid::Request &req);
+    uint8_t BuildPWMTx(const txt_driver::pwm::Request &req);
     void Send( Serial::Serial* port );
     void Receive( Serial::Serial * port );
 };

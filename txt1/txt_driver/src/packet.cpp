@@ -168,6 +168,34 @@ uint8_t Packet::BuildPidTx(const txt_driver::pid::Request &req)
 	return(0);
 }
 
+uint8_t Packet::BuildPWMTx(const txt_driver::pwm::Request &req)
+{
+  uint8_t data[SIZE_PWM_TX] = {0};
+	int32_t temp;
+	
+	temp = (int32_t)(req.esc);
+	data[0] = (uint8_t)(temp >> 24);
+	data[1] = (uint8_t)(temp >> 16);
+	data[2] = (uint8_t)(temp >> 8);
+	data[3] = (uint8_t)(temp & 0x000000FF);
+	
+  temp = (int32_t)(req.front);
+	data[4] = (uint8_t)(temp >> 24);
+	data[5] = (uint8_t)(temp >> 16);
+	data[6] = (uint8_t)(temp >> 8);
+	data[7] = (uint8_t)(temp & 0x000000FF);
+	
+	temp = (int32_t)(req.rear);
+	data[8] = (uint8_t)(temp >> 24);
+	data[9] = (uint8_t)(temp >> 16);
+	data[10] = (uint8_t)(temp >> 8);
+	data[11] = (uint8_t)(temp & 0x000000FF);
+	
+	Build(data, SIZE_PWM_TX, CMD_PWM_TX);
+	
+  return(0);
+}
+
 /******************************************************************************
  * Name: 	CalcChkSum()
  * Inputs:	None
