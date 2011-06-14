@@ -14,12 +14,12 @@ TXT1::TXT1(ros::NodeHandle nh)
 
 	std::string def = "/dev/ttyUSB0";
 	n_private.param("port", port_, def);
-	COMB_ODOM_CNT_LIMIT_ = 2;
+	COMB_ODOM_CNT_LIMIT_ = 1;
 	shutdown_ = false;
 
 	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
 //	comb_odom_sub_ = n_.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
-	comb_odom_sub_ = n_.subscribe("/vo", 1000, &TXT1::combOdomCB, this);
+	comb_odom_sub_ = n_.subscribe("/vo", 1, &TXT1::combOdomCB, this);
 
 	cmd_vel_tmr_ = n_.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
 	comb_odom_tmr_ = n_.createTimer(ros::Duration(0.05), &TXT1::combOdomTmrCB, this);
@@ -77,11 +77,16 @@ void TXT1::cmdVelTmrCB(const ros::TimerEvent& e)
 
 void TXT1::combOdomTmrCB(const ros::TimerEvent& e)
 {
-	if (comb_odom_cnt_ > COMB_ODOM_CNT_LIMIT_)
+	if (comb_odom_cnt_ > 0)//COMB_ODOM_CNT_LIMIT_)
 	{
 		Packet packet;
 		packet.BuildCombOdom(comb_odom_msg_);
 		packet.Send(my_serial_);
+		ROS_INFO("Sent COMB ODOM");
+	}
+	else
+	{
+	  ROS_INFO("No Messages Available");
 	}
 
 	comb_odom_cnt_ = 0;
@@ -89,6 +94,7 @@ void TXT1::combOdomTmrCB(const ros::TimerEvent& e)
 //void TXT1::combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 void TXT1::combOdomCB(const nav_msgs::OdometryConstPtr &msg)
 {
+  ROS_INFO("Rx VO");
 	comb_odom_cnt_++;
 	comb_odom_msg_ = *msg;
 //	ros::Duration dt = msg->header.stamp - comb_pose_msg_.header.stamp;
