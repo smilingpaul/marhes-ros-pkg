@@ -19,10 +19,10 @@ define erratic position
 (
   #size [0.415 0.392 0.25]
   size [0.35 0.35 0.25]
-  origin [0 0 0 0]
+  origin [-0.05 0 0 0]
   gui_nose 1
   drive "diff"
-  topurg(pose [ 0.1 0 0 0 ])
+  topurg(pose [ 0.050 0.000 0 0.000 ])
 )
 
 define floorplan model
@@ -50,21 +50,21 @@ interval_sim 100  # simulation timestep in milliseconds
 
 window
 ( 
-  size [ 750.000 750.000 ] 
+  size [ 745.000 448.000 ] 
 
-  rotate [ 0.000 0.000 ]
-  scale 50 
+  rotate [ 0.000 -1.560 ]
+  scale 28.806 
 )
 
 # load an environment bitmap
 floorplan
 ( 
-  name "maze"
-  bitmap "maze.pgm"
-  size [10 10 0.5]
-  pose [ 5 5 0 0.000 ]
+  name "willow"
+  bitmap "willow-full.pgm"
+  size [54.0 58.7 0.5]
+  pose [ -29.350 27.000 0 90.000 ]
 )
 
 # throw in a robot
-erratic( pose [ 3 1 2 180.000 ] name "era" color "blue")
-block( pose [ 5 1 0 180.000 ] color "red")
+erratic( pose [ -11.277 23.266 0 180.000 ] name "era" color "blue")
+block( pose [ -13.924 25.020 0 180.000 ] color "red")

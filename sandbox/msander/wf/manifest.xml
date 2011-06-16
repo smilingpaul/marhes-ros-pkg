@@ -1,0 +1,20 @@
+<package>
+<description brief="Simple Wall Following">
+A package for simple wall following control.
+</description>
+<author>Mike S. Anderson</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/wf</url>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+ <depend package="geometry_msgs"/> <!-- cmd_vel is in here -->
+ <depend package="tf"/>
+  <depend package="p2os_driver"/>
+ <depend package="nav_msgs"/> <!-- odom is in here -->
+ <depend package="sensor_msgs"/> <!-- laser_scan is in here -->
+ <depend package="visualization_msgs"/> <!-- Marker is in here -->
+
+</package>
+
+

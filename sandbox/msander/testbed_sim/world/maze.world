@@ -1,3 +1,7 @@
+# defines Pioneer-like robots
+#include "pioneer.inc"
+# Not supported in stageros node.
+
 define block model
 (
   size [0.5 0.5 0.5]
@@ -6,7 +10,6 @@ define block model
 
 define topurg laser
 (
-
   range_max 30.0
   fov 270.25
   samples 1081
@@ -65,6 +68,27 @@ floorplan
   pose [ 5 5 0 0.000 ]
 )
 
-# throw in a robot
-erratic( pose [ 3 1 2 180.000 ] name "era" color "blue")
-block( pose [ 5 1 0 180.000 ] color "red")
+# throw in an erratic robot
+erratic
+( 
+  pose [ 3 1 0 180.000 ]
+  name "era"
+  color "blue"
+)
+# Add a block
+
+block
+( 
+  pose [ 5 1 0 180.000 ] 
+  color "yellow")
+
+# toss in a pioneer
+
+#pioneer2dx
+#(
+#  color "red"
+#  name "Pioneer"
+#  port 6665
+#  pose [-2.000 0.000 90.000]
+#)
+
