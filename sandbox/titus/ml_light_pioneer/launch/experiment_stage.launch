@@ -1,0 +1,38 @@
+<launch>
+
+  <node name="experiment_stage" pkg="ml_light_pioneer" type="experiment_stage" output="screen">
+	  <param name="num_reps" value="25" />
+    <param name="freq" value="2.0" />
+    <param name="goal_radius" value="0.5" />
+    <param name="start_radius" value="5.0" />
+    <param name="goalx" value="0.0" />
+    <param name="goaly" value="0.0" />
+    <param name="bounds/tlx" value="-8.0" />
+    <param name="bounds/tly" value="8.0" />
+    <param name="bounds/brx" value="8.0" />
+    <param name="bounds/bry" value="-8.0" />
+   
+    <param name="num_states" value="8" />  
+    <param name="num_actions" value="3" />
+    
+    <param name="ang_vel_lim" value="1.0" />            
+             
+    <param name="learning_rate" value="0.3" />            
+    <param name="discount_factor" value="0.5" />            
+    <param name="temp_const" value="5.0" />            
+    <param name="temp_alpha" value="0.65" />   
+    
+    <param name="xdist" value="8 / 0.0254" />   
+    <param name="ydist" value="6 / 0.0254" /> 
+    <!--rosparam file="$(find ml_light_pioneer)/launch/qtable.yaml" command="load" /-->
+  
+  </node>
+  
+  <node name="move_simple" pkg="ml_light_pioneer" type="move_simple" output="screen">
+    <param name="max_lin_vel" value="0.5" />
+    <param name="max_ang_vel" value="1.0" />
+  </node>
+  
+  <node name="stage_node" pkg="stage" type="stageros" args="$(find ml_light_pioneer)/world/square.world" output="screen" />
+
+</launch>
