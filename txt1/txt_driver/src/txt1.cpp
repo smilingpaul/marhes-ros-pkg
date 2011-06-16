@@ -17,7 +17,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	COMB_ODOM_CNT_LIMIT_ = 1;
 	shutdown_ = false;
 
-	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
+	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1, &TXT1::cmdVelCB, this);
 //	comb_odom_sub_ = n_.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
 	comb_odom_sub_ = n_.subscribe("/vo", 1, &TXT1::combOdomCB, this);
 
