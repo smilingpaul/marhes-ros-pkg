@@ -1,0 +1,17 @@
+<package>
+  <description brief="testbed_sim">
+
+     testbed_sim
+
+  </description>
+  <author>marhes</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/testbed_sim</url>
+  <depend package="std_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+
+</package>
+
+
