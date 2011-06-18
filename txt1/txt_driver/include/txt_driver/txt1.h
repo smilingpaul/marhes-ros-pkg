@@ -5,6 +5,7 @@
 #include "txt_driver/packet.h"
 #include "txt_driver/serial.h"
 #include "txt_driver/Battery.h"
+#include "txt_driver/PidTerms.h"
 #include "txt_driver/pid.h"
 #include "txt_driver/pwm.h"
 #include "txt_driver/shutdown.h"
@@ -41,11 +42,13 @@ public:
 	void pubOdom(double x, double y, double theta, double vx,
 			double vtheta);
 	void pubBattery(double batt1, double batt2);
+	void pubPidTerms(double pterm, double iterm, double dterm, double signal);
 private:
 	ros::Subscriber cmd_vel_sub_;
 	ros::Subscriber comb_odom_sub_;
 	ros::Publisher odom_pub_;
 	ros::Publisher battery_pub_;
+  ros::Publisher pid_terms_pub_;
 	ros::Timer cmd_vel_tmr_;
 	ros::Timer comb_odom_tmr_;
 	ros::ServiceServer pid_srv_;
