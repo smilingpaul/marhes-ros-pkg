@@ -1,6 +1,6 @@
 # defines Pioneer-like robots
 #include "pioneer.inc"
-# Not supported in stageros node.
+# Not supported in normal stageros node.
 
 define block model
 (
