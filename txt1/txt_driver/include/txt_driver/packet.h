@@ -24,9 +24,9 @@ class Packet
 {
 	private:
 		typedef enum {CMD_VEL = 103, CMD_ODOM_ENC = 104, CMD_ODOM_COMB = 105,
-			CMD_BATTERY = 106, CMD_PID_TX = 107, CMD_PWM_TX = 108} COMMANDS;
+			CMD_BATTERY = 106, CMD_PID_TX = 107, CMD_PWM_TX = 108, CMD_PID_TERMS = 109} COMMANDS;
 		typedef enum {SIZE_VEL = 4, SIZE_ODOM_ENC = 20, SIZE_ODOM_COMB = 20,
-			SIZE_BATTERY = 4, SIZE_PID_TX = 24, SIZE_PWM_TX = 12} SIZES;
+			SIZE_BATTERY = 4, SIZE_PID_TX = 24, SIZE_PWM_TX = 12, SIZE_PID_TERMS = 16} SIZES;
 			
     typedef struct {
       uint8_t start_byte_1;

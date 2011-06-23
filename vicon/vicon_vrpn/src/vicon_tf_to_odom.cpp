@@ -19,7 +19,7 @@ public:
     n_private.param("odom_frame", odom_frame_, string("/odom"));
     n_private.param("odom_topic", odom_topic_, string("/vo"));
     n_private.param("odom_filter_topic", odom_filter_topic_, string("/vo_filter"));
-    n_private.param("freq", freq_, 50.0);
+    n_private.param("freq", freq_, 100.0);
 //    n_private.param("bool_tf", bool_tf_, true);
 
     if (!n_private.hasParam("frame"))

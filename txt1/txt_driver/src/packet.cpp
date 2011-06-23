@@ -127,37 +127,37 @@ uint8_t Packet::BuildPidTx(const txt_driver::pid::Request &req)
 	uint8_t data[SIZE_PID_TX] = {0};
 	int32_t temp;
 
-	temp = (int32_t)(req.kp_lv);
+	temp = (int32_t)(req.kp_lv * 1000);
 	data[0] = (uint8_t)(temp >> 24);
 	data[1] = (uint8_t)(temp >> 16);
 	data[2] = (uint8_t)(temp >> 8);
 	data[3] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int32_t)(req.ki_lv);
+	temp = (int32_t)(req.ki_lv * 1000);
 	data[4] = (uint8_t)(temp >> 24);
 	data[5] = (uint8_t)(temp >> 16);
 	data[6] = (uint8_t)(temp >> 8);
 	data[7] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int32_t)(req.kd_lv);
+	temp = (int32_t)(req.kd_lv * 1000);
 	data[8] = (uint8_t)(temp >> 24);
 	data[9] = (uint8_t)(temp >> 16);
 	data[10] = (uint8_t)(temp >> 8);
 	data[11] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int32_t)(req.kp_av);
+	temp = (int32_t)(req.kp_av * 1000);
 	data[12] = (uint8_t)(temp >> 24);
 	data[13] = (uint8_t)(temp >> 16);
 	data[14] = (uint8_t)(temp >> 8);
 	data[15] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int32_t)(req.ki_av);
+	temp = (int32_t)(req.ki_av * 1000);
 	data[16] = (uint8_t)(temp >> 24);
 	data[17] = (uint8_t)(temp >> 16);
 	data[18] = (uint8_t)(temp >> 8);
 	data[19] = (uint8_t)(temp & 0x000000FF);
 
-	temp = (int32_t)(req.kd_av);
+	temp = (int32_t)(req.kd_av * 1000);
 	data[20] = (uint8_t)(temp >> 24);
 	data[21] = (uint8_t)(temp >> 16);
 	data[22] = (uint8_t)(temp >> 8);
@@ -331,7 +331,7 @@ void Packet::Receive( Serial::Serial * port )
 
 void Packet::ProcessData()
 {
-	double xpos, ypos, theta, linvel, angvel, batt1, batt2;
+	double xpos, ypos, theta, linvel, angvel, batt1, batt2, pterm, iterm, dterm, signal;
 
 	switch(msg_.var.header.var.command)
 	{
@@ -355,6 +355,20 @@ void Packet::ProcessData()
 
 			p->pubBattery(batt1, batt2);
 			break;
+		case CMD_PID_TERMS:
+		  if (msg_.var.header.var.length != SIZE_PID_TERMS)
+		    break;
+		    
+		    pterm = (double)((msg_.var.data[0] << 24) + (msg_.var.data[1] << 16) + 
+		                     (msg_.var.data[2] << 8) + msg_.var.data[3]);
+ 		    iterm = (double)((msg_.var.data[4] << 24) + (msg_.var.data[5] << 16) + 
+		                     (msg_.var.data[6] << 8) + msg_.var.data[7]);
+ 		    dterm = (double)((msg_.var.data[8] << 24) + (msg_.var.data[9] << 16) + 
+		                     (msg_.var.data[10] << 8) + msg_.var.data[11]);
+ 		    signal = (double)((msg_.var.data[12] << 24) + (msg_.var.data[13] << 16) + 
+		                     (msg_.var.data[14] << 8) + msg_.var.data[15]);
+		    p->pubPidTerms(pterm, iterm, dterm, signal);
+		  break;			
 		default:
 
 			break;
