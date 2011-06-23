@@ -1,8 +1,8 @@
-int32 kp_lv
-int32 ki_lv
-int32 kd_lv
-int32 kp_av
-int32 ki_av
-int32 kd_av
+float32 kp_lv
+float32 ki_lv
+float32 kd_lv
+float32 kp_av
+float32 ki_av
+float32 kd_av
 ---
 bool result

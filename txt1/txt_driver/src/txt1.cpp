@@ -17,7 +17,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	COMB_ODOM_CNT_LIMIT_ = 1;
 	shutdown_ = false;
 
-	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1000, &TXT1::cmdVelCB, this);
+	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1, &TXT1::cmdVelCB, this);
 //	comb_odom_sub_ = n_.subscribe("/robot_pose_ekf/odom_combined", 1000, &TXT1::combOdomCB, this);
 	comb_odom_sub_ = n_.subscribe("/vo", 1, &TXT1::combOdomCB, this);
 
@@ -26,6 +26,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 
 	odom_pub_ = n_.advertise<nav_msgs::Odometry>("/odom", 50);
 	battery_pub_ = n_.advertise<txt_driver::Battery>("/battery", 50);
+	pid_terms_pub_ = n_.advertise<txt_driver::PidTerms>("/pid_terms", 1);
 
 	pid_srv_ = n_.advertiseService("/pid_change", &TXT1::pidSrvCB, this);
   shutdown_srv_ = n_.advertiseService("/shutdown_computer", &TXT1::shutdownSrvCB, this);
@@ -166,6 +167,18 @@ void TXT1::pubBattery(double batt1, double batt2)
 	battery_msg_.batt1 = batt1;
 	battery_msg_.batt2 = batt2;
 	battery_pub_.publish(battery_msg_);
+}
+
+void TXT1::pubPidTerms(double pterm, double iterm, double dterm, double signal)
+{
+  txt_driver::PidTerms msg;
+  msg.header.stamp = ros::Time::now();
+  msg.header.frame_id = "pid_terms";
+  msg.pterm = pterm;
+  msg.iterm = iterm;
+  msg.dterm = dterm;
+  msg.signal = signal;
+  pid_terms_pub_.publish(msg);  
 }
 
 bool TXT1::pidSrvCB(txt_driver::pid::Request& request, txt_driver::pid::Response& response)
