@@ -1,8 +1,8 @@
 <launch>
-  <machine name="Pioneer05" address="Pioneer05" default="never" user="marhes" password="marhes"/>
+  <machine name="Pioneer02" address="Pioneer02" default="never" user="marhes" password="marhes"/>
   
-  <!--node name="experiment" pkg="ml_light_pioneer" type="experiment" output="screen">
-	  <param name="num_reps" value="25" />
+  <node name="experiment" pkg="ml_light_pioneer" type="experiment" output="screen">
+	  <param name="num_reps" value="15" />
     <param name="freq" value="2.0" />
     <param name="goal_radius" value="0.5" />
     <param name="start_radius" value="5.0 * 0.0254 * 12.0" />
@@ -24,25 +24,25 @@
     <param name="temp_alpha" value="0.65" />   
     
     <param name="xdist" value="8 / 0.0254" />   
-    <param name="ydist" value="6 / 0.0254" /--> 
+    <param name="ydist" value="6 / 0.0254" /> 
     
     <!--rosparam file="$(find ml_light_pioneer)/launch/qtable.yaml" command="load" /-->
        
-    <!--remap to="/interface_kit/95283/sensor/4" from="flls"/>
+    <remap to="/interface_kit/95283/sensor/4" from="flls"/>
     <remap to="/interface_kit/95283/sensor/5" from="frls"/>
     <remap to="/interface_kit/95283/sensor/6" from="rlls"/>
     <remap to="/interface_kit/95283/sensor/7" from="rrls"/>
   
-  </node-->
+  </node>
   
   <node name="move_simple" pkg="ml_light_pioneer" type="move_simple" output="screen">
     <param name="max_lin_vel" value="0.5" />
     <param name="max_ang_vel" value="1.0" />
   </node>
   
-  <node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="Pioneer05"/>
+  <node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="Pioneer02"/>
 
-  <node name="pioneer" pkg="p2os_driver" type="p2os" output="screen" machine="Pioneer05"/>
+  <node name="pioneer" pkg="p2os_driver" type="p2os" output="screen" machine="Pioneer02"/>
 
   <include file="$(find vicon_vrpn)/launch/vicon_vrpn.launch" />
   

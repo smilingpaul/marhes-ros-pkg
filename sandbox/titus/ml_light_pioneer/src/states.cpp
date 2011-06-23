@@ -89,13 +89,15 @@ void States::cb_tmr_state(const ros::TimerEvent& event)
   else
     state_ = i;
 
-  ROS_INFO("Direction: %f, State: %d", light_dir_, state_);
+  //ROS_INFO("Direction: %f, State: %d", light_dir_, state_);
 
   // publish light direction marker
   marker_.header.stamp = ros::Time::now();
   marker_.pose.position.x = odom_msg_.pose.pose.position.x;
   marker_.pose.position.y = odom_msg_.pose.pose.position.y;
-  marker_.pose.orientation = tf::createQuaternionMsgFromYaw(light_dir_);
+  marker_.pose.orientation = tf::createQuaternionMsgFromYaw(light_dir_ + 
+          tf::getYaw(odom_msg_.pose.pose.orientation)); 
+      
   vis_pub_.publish( marker_ );
 }
   
