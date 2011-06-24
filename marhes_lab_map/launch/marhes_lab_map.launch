@@ -1,0 +1,5 @@
+<launch>
+
+  <node name="marhes_map_server" pkg="map_server" type="map_server" args="$(find marhes_lab_map)/launch/map.yaml"/>
+
+</launch>
