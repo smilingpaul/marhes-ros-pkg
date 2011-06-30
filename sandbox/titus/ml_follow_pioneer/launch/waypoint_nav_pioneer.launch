@@ -1,0 +1,23 @@
+<launch>
+  <machine name="Pioneer02" address="Pioneer02" default="never" user="marhes" password="marhes"/>
+
+  <node name="waypoint_nav" pkg="ml_follow_pioneer" type="waypoint_navigator" output="screen">
+    <rosparam file="$(find ml_follow_pioneer)/launch/waypoints.yaml" command="load" />
+    <param name="lin_vel" value="0.5" />
+    <param name="look_ahead" value="0.75" />
+    <remap from="/odom" to="base_pose_ground_truth" />
+    <!--remap from="/cmd_vel" to="/robot_0/cmd_vel" /-->
+  </node>
+  
+  <include file="$(find vicon_vrpn)/launch/vicon_vrpn.launch" />
+  
+  <node name="vicon_to_odom" pkg="vicon_vrpn" type="vicon_tf_to_odom" >
+    <param name="odom_frame" value="vicon_odom" />
+    <param name="frame" value="Pioneer05/vicon" />
+    <param name="odom_topic" value="base_pose_ground_truth" />
+  </node>
+  
+  <node name="odom_to_vicon_odom" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 odom vicon_odom 10" />
+  
+  <node name="p2os" pkg="p2os_driver" type="p2os" machine="Pioneer02" />
+</launch>
