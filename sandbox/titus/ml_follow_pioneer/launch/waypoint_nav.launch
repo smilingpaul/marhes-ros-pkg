@@ -1,0 +1,9 @@
+<launch>
+  <node name="waypoint_nav" pkg="ml_follow_pioneer" type="waypoint_navigator" output="screen">
+    <rosparam file="$(find ml_follow_pioneer)/launch/waypoints.yaml" command="load" />
+    <param name="lin_vel" value="0.5" />
+    <param name="look_ahead" value="0.5" />
+    <remap from="/odom" to="/robot_0/base_pose_ground_truth" />
+    <remap from="/cmd_vel" to="/robot_0/cmd_vel" />
+  </node>
+</launch>
