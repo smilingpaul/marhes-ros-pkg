@@ -48,6 +48,7 @@ WaypointNavigator::WaypointNavigator(ros::NodeHandle nh)
   
   cmd_vel_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
   odom_sub_ = n_.subscribe<nav_msgs::Odometry>("/odom", 1, &WaypointNavigator::cb_odom, this);
+  
 }
 
 void WaypointNavigator::cb_odom(nav_msgs::Odometry msg)
