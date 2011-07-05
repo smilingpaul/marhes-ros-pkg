@@ -1,0 +1,18 @@
+<package>
+  <description brief="txt_tester">
+
+     txt_tester
+
+  </description>
+  <author>marhes</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/txt_tester</url>
+  <depend package="roscpp"/>
+  <depend package="joy"/>
+  <depend package="geometry_msgs"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+
