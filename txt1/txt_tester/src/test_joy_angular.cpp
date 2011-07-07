@@ -20,7 +20,7 @@ private:
 	joy::Joy joyMsg;
 
 	int linAxis, angAxis;
-	double linVel;
+	double linVel, ang_vel_max;
 	bool joyRxFlag;
 };
 
@@ -30,6 +30,7 @@ Txt1Teleop::Txt1Teleop(ros::NodeHandle nh):n(nh)
 
 	n_private.param("linAxis", linAxis, 1);
 	n_private.param("angAxis", angAxis, 0);
+	n_private.param("angVelMax", ang_vel_max, 2.0);
 	
 	joyRxFlag = false;
 
@@ -51,7 +52,7 @@ void Txt1Teleop::cmdVelTmrCB(const ros::TimerEvent& e)
 	if (joyRxFlag && joyMsg.buttons[0] == 1)
   {
     vel.linear.x = linVel;
-    vel.angular.z = 2.0 * joyMsg.axes[angAxis];
+    vel.angular.z = ang_vel_max * joyMsg.axes[angAxis];
   }
   else
   {

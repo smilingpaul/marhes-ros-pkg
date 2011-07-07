@@ -66,8 +66,8 @@ class Packet
     uint8_t BuildCombOdom(const nav_msgs::Odometry &msg);
     uint8_t BuildPidTx(const txt_driver::pid::Request &req);
     uint8_t BuildPWMTx(const txt_driver::pwm::Request &req);
-    void Send( Serial::Serial* port );
-    void Receive( Serial::Serial * port );
+    void Send( Serial * port );
+    void Receive( Serial * port );
 };
 
 #endif

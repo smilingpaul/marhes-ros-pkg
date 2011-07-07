@@ -35,7 +35,7 @@ public:
 	txt_driver::pwm::Request pwm_req_;
 
   bool shutdown_;
-	Serial::Serial * my_serial_;
+	Serial * my_serial_;
 
 	TXT1(ros::NodeHandle nh);
 	virtual ~TXT1();
