@@ -22,7 +22,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	comb_odom_sub_ = n_.subscribe("/vo", 1, &TXT1::combOdomCB, this);
 
 	cmd_vel_tmr_ = n_.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
-	comb_odom_tmr_ = n_.createTimer(ros::Duration(0.05), &TXT1::combOdomTmrCB, this);
+	comb_odom_tmr_ = n_.createTimer(ros::Duration(0.02), &TXT1::combOdomTmrCB, this);
 
 	odom_pub_ = n_.advertise<nav_msgs::Odometry>("/odom", 50);
 	battery_pub_ = n_.advertise<txt_driver::Battery>("/battery", 50);

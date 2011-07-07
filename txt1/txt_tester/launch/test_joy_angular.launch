@@ -1,7 +1,9 @@
 <launch>
   <node name="tester" pkg="txt_tester" type="test_joy_angular" output="screen">
-    <param name="angVelMax" value="3.0" />
+    <param name="angVelMax" value="2.0" />
   </node>
   <node name="joy" pkg="joy" type="joy_node" />
-  <node name="txt1" pkg="txt_driver" type="txt_node" />
+  <node name="txt1" pkg="txt_driver" type="txt_node" >
+    <param name="port" value="/dev/ttyUSB1" />
+  </node>
 </launch>
