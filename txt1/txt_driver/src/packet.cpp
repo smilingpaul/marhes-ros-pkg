@@ -260,7 +260,7 @@ bool Packet::Check()
  * Description: This method sends the assembled packet on the given serial port.
  ******************************************************************************/
 
-void Packet::Send( Serial::Serial* port )
+void Packet::Send( Serial * port )
 {
 	int32_t cnt = 0;
 
@@ -279,20 +279,20 @@ void Packet::Send( Serial::Serial* port )
 	}
 }
 
-void Packet::Receive( Serial::Serial * port )
+void Packet::Receive( Serial * port )
 {
 	while ((dataNum_ < MAX_PACKET_SIZE) && (port->Read(&msg_.bytes[dataNum_], 1) > 0))
 	{
 		if (dataNum_ == 0)						// Read the packet header
 		{
-		  if (msg_.var.header.var.start_byte_1 = 0xFA)
+		  if (msg_.var.header.var.start_byte_1 == 0xFA)
 		  {
 		    dataNum_++;
 		  }
 		}
 		else if (dataNum_ == 1)
 		{
-		  if (msg_.var.header.var.start_byte_2 = 0xFB)
+		  if (msg_.var.header.var.start_byte_2 == 0xFB)
 		  {
 		    dataNum_++;
 		  }
