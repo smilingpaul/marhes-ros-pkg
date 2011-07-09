@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   string host_addr, tf_ref_frame, subjects[MAX_DEVICES], addresses[MAX_DEVICES];
   device_info device_list[MAX_DEVICES];
   int num_subjects;
-  ros::Rate loop_rate(200);
+  ros::Rate loop_rate(100);
   
   // Get parameters
   n_private.param("host_addr", host_addr, string("Vicon"));
