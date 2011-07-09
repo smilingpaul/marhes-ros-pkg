@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
+#include "joy/Joy.h"
 
 class TxtController{
 public:
@@ -14,7 +15,7 @@ public:
 	virtual ~TxtController();
 private:
 	ros::NodeHandle n_;
-	ros::Subscriber vel_sub_, odom_sub_, gains_sub_;
+	ros::Subscriber vel_sub_, odom_sub_, gains_sub_, joy_sub_;
 	ros::Publisher pid_term_pub_;
 	ros::Timer pid_loop_tmr_;
 	
@@ -27,12 +28,15 @@ private:
   struct termios my_termios_;
   std::string port_;
   bool serial_open_;
+	joy::Joy joyMsg;
+  bool joyRxFlag;
   
   void cmdVelCB(geometry_msgs::Twist msg);
   void odomCB(nav_msgs::Odometry msg);
   void gainsCB(txt_controller::Gains msg);
   void pidTmr(const ros::TimerEvent& e);
   void sendCommands(int32_t linear, int32_t angular);
+  void joyCB(joy::Joy msg);
 };
 
 TxtController::TxtController(ros::NodeHandle nh)
@@ -41,8 +45,8 @@ TxtController::TxtController(ros::NodeHandle nh)
   ros::NodeHandle n_private("~");
   port_ = "/dev/ttyUSB0";
 
-  n_.param("freq", loop_freq_, 40.0);
-  n_.param("port", port_, port_);
+  n_private.param("freq", loop_freq_, 50.0);
+  n_private.param("port", port_, port_);
   kp_lv_ = 0; ki_lv_ = 0; kd_lv_ = 0;
   kp_av_ = 0; ki_av_ = 0; kd_av_ = 0;
   VELOCITY_PWM_MAX = 24000;
@@ -95,12 +99,16 @@ TxtController::TxtController(ros::NodeHandle nh)
 			}
 		}
 	}
+	
+	joyRxFlag = false;
   
   vel_sub_ = n_.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &TxtController::cmdVelCB, this);
   odom_sub_ = n_.subscribe<nav_msgs::Odometry>("/odom", 1, &TxtController::odomCB, this);
   gains_sub_ = n_.subscribe<txt_controller::Gains>("/gains", 1, &TxtController::gainsCB, this);
   pid_term_pub_ = n_.advertise<txt_controller::PidTerms>("/pid_terms", 1);
   pid_loop_tmr_ = n_.createTimer(ros::Duration(1 / loop_freq_), &TxtController::pidTmr, this);
+  
+  joy_sub_ = n_.subscribe<joy::Joy>("joy", 10, &TxtController::joyCB, this);
 }
 
 TxtController::~TxtController()
@@ -125,6 +133,12 @@ void TxtController::gainsCB(txt_controller::Gains msg)
 
 }
 
+void TxtController::joyCB(joy::Joy msg)
+{
+	joyMsg = msg;
+	joyRxFlag = true;
+}
+
 void TxtController::pidTmr(const ros::TimerEvent& e)
 {
   static float e_lv = 0, e_av = 0;
@@ -142,7 +156,7 @@ void TxtController::pidTmr(const ros::TimerEvent& e)
   literm = ki_lv_ * (e_lv + e_lv_last) / (2 * loop_freq_);
   ldterm = kd_lv_ * (e_lv - 2 * e_lv_last + e_lv_last2) * loop_freq_;
   
-  u_lv += (int32_t)(lpterm + literm - ldterm);
+  u_lv += (int32_t)(lpterm + literm + ldterm);
   
   if (u_lv > VELOCITY_PWM_MAX)
     u_lv = VELOCITY_PWM_MAX;
@@ -163,7 +177,13 @@ void TxtController::pidTmr(const ros::TimerEvent& e)
     u_av = VELOCITY_PWM_MIN;
 
   // Set the PWM duty cycles for the motor and the steering servos
-  sendCommands(u_lv, (int32_t)(cmd_vel_msg_.angular.z * 9000));
+  if (joyRxFlag && joyMsg.buttons[2] == 1)
+    sendCommands((int32_t)u_lv, (int32_t)(cmd_vel_msg_.angular.z * 9000));
+  else
+  {
+    sendCommands(0, 0);
+    u_lv = 0; u_av = 0; e_lv_last = 0; e_av_last = 0; e_lv_last2 = 0; e_av_last2 = 0;
+  }
 
   termsMsg.pterm = lpterm;
   termsMsg.iterm = literm;

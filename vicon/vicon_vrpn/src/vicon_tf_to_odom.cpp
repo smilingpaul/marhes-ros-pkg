@@ -120,7 +120,8 @@ public:
     }
 
     dt_ = transform.stamp_.toSec() - last_transform_.stamp_.toSec();
-
+    //ROS_INFO("DT: %f, T1: %f, T2: %f", dt_, transform.stamp_.toSec(), 
+    //         last_transform_.stamp_.toSec());
     if (dt_ > 0)
     {
         cvmSet(z_, 0, 0, (float)transform.getOrigin().getX());
@@ -192,10 +193,18 @@ public:
 		odom_msg.twist.twist.linear.z = 0.0;
 		odom_msg.twist.twist.angular.z = (double)cvmGet(kalman_->state_post, 5, 0);
 
+    if (odom_msg.twist.twist.linear.x > 5)
+    {
+        ROS_INFO("DT: %f, T1: %f, T2: %f", dt_, transform.stamp_.toSec(), 
+             last_transform_.stamp_.toSec());
+        PrintMat(kalman_->error_cov_post);
+        PrintMat(kalman_->state_post);
+    }
+
 		// Fix velocity
 		vx = cvmGet(kalman_->state_post, 3, 0);
 		vy = cvmGet(kalman_->state_post, 4, 0);
-		ROS_INFO("vx: %f, vy: %f, Yaw: %f", vx, vy, theta);
+		//ROS_INFO("vx: %f, vy: %f, Yaw: %f", vx, vy, theta);
 		theta_v = atan2(vy, vx);
 //		if ((theta > 2*M_PI/3 || theta < -2*M_PI/3) && theta_v < 2*M_PI/3 && theta_v > -2*M_PI/3)
 //			odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
@@ -209,14 +218,14 @@ public:
 		if (theta_min < -M_PI)
 			theta_min += 2 * M_PI;
 
-		ROS_INFO("%f, %f, %f", theta_v, theta_max, theta_min);
+		//ROS_INFO("%f, %f, %f", theta_v, theta_max, theta_min);
 
 		if ((theta <= M_PI / 2) && (theta >= -M_PI / 2))
 		{
 			if (!((theta_v < theta_max) && (theta_v > theta_min)))
 			{
                 odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
-                ROS_INFO("Something is wrong: 1");
+                //ROS_INFO("Something is wrong: 1");
             }
 		}
 		else
@@ -224,7 +233,7 @@ public:
 			if ((theta_v > theta_max) && (theta_v < theta_min))
 			{	
                 odom_msg.twist.twist.linear.x = -odom_msg.twist.twist.linear.x;
-				ROS_INFO("Something is wrong: 2");
+				//ROS_INFO("Something is wrong: 2");
             }
 		}
 
