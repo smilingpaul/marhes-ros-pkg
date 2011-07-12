@@ -30,7 +30,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	pwm_sub_ = n_.subscribe<txt_driver::Pwm>("/pwm", 10, &TXT1::pwmMsgCB, this);
 
 	cmd_vel_tmr_ = n_.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
-	comb_odom_tmr_ = n_.createTimer(ros::Duration(1.0), &TXT1::combOdomTmrCB, 
+	comb_odom_tmr_ = n_.createTimer(ros::Duration(0.020), &TXT1::combOdomTmrCB, 
 	    this);
 
 	odom_pub_ = n_.advertise<nav_msgs::Odometry>("/odom", 50);
@@ -87,7 +87,7 @@ void TXT1::cmdVelTmrCB(const ros::TimerEvent& e)
 
 void TXT1::combOdomTmrCB(const ros::TimerEvent& e)
 {
-	if (comb_odom_cnt_ > COMB_ODOM_CNT_LIMIT_)
+	if (comb_odom_cnt_ > 0)//COMB_ODOM_CNT_LIMIT_)
 	{
     use_comb_odom_ = true;
 	}
@@ -101,9 +101,9 @@ void TXT1::combOdomTmrCB(const ros::TimerEvent& e)
 void TXT1::combOdomCB(nav_msgs::Odometry msg)
 {
   comb_odom_cnt_++;
+  comb_odom_msg_ = msg;
   if (use_comb_odom_ == true)
   {
-	  comb_odom_msg_ = msg;
 	  Packet packet;
 		packet.BuildCombOdom(comb_odom_msg_);
 		packet.Send(my_serial_);

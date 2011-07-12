@@ -14,7 +14,7 @@ private:
   double freq_;
   std::string subject_, server_, subjectName_, rootSegment_;
   ros::Timer calc_tmr_;
-  Client vicon_client_;
+  Client * vicon_client_;
   
   void ViconTmr(const ros::TimerEvent& event);
 };
@@ -23,7 +23,7 @@ ViconToPose::ViconToPose(ros::NodeHandle nh)
 {
   n_ = nh;
   ros::NodeHandle n_private("~");
-  n_private.param("freq", freq_, 50.0);
+  n_private.param("freq", freq_, 100.0);
   n_private.param("server", server_, std::string("Vicon"));
   
   if (!n_private.hasParam("subject"))
@@ -34,10 +34,14 @@ ViconToPose::ViconToPose(ros::NodeHandle nh)
   
   // Get the subject to track
   n_private.getParam("subject", subject_);
+  ROS_INFO("Tracking subject: %s", subject_.c_str());
+  
+  vicon_client_ = new Client();
   
   // Try to connect to the server
   while(ros::ok() && !vicon_client_.IsConnected().Connected)
   {
+    ROS_INFO("In connect loop");
     vicon_client_.Connect(server_);
     ROS_INFO("Waiting to connect.");
     ros::Duration(1).sleep();
