@@ -122,7 +122,7 @@ uint8_t Packet::BuildCombOdom(const nav_msgs::Odometry &msg)
 	return(0);
 }
 
-uint8_t Packet::BuildPidTx(const txt_driver::pid::Request &req)
+uint8_t Packet::BuildPidTx(const txt_driver::Pid::Request &req)
 {
 	uint8_t data[SIZE_PID_TX] = {0};
 	int32_t temp;
@@ -168,9 +168,9 @@ uint8_t Packet::BuildPidTx(const txt_driver::pid::Request &req)
 	return(0);
 }
 
-uint8_t Packet::BuildPWMTx(const txt_driver::pwm::Request &req)
+uint8_t Packet::BuildPWMTestTx(const txt_driver::PwmTest::Request &req)
 {
-  uint8_t data[SIZE_PWM_TX] = {0};
+  uint8_t data[SIZE_PWM_TEST_TX] = {0};
 	int32_t temp;
 	
 	temp = (int32_t)(req.esc);
@@ -191,8 +191,54 @@ uint8_t Packet::BuildPWMTx(const txt_driver::pwm::Request &req)
 	data[10] = (uint8_t)(temp >> 8);
 	data[11] = (uint8_t)(temp & 0x000000FF);
 	
-	Build(data, SIZE_PWM_TX, CMD_PWM_TX);
+  temp = (int32_t)(req.pwm4);
+	data[12] = (uint8_t)(temp >> 24);
+	data[13] = (uint8_t)(temp >> 16);
+	data[14] = (uint8_t)(temp >> 8);
+	data[15] = (uint8_t)(temp & 0x000000FF);
 	
+  temp = (int32_t)(req.pwm5);
+	data[16] = (uint8_t)(temp >> 24);
+	data[17] = (uint8_t)(temp >> 16);
+	data[18] = (uint8_t)(temp >> 8);
+	data[19] = (uint8_t)(temp & 0x000000FF);
+	
+	Build(data, SIZE_PWM_TEST_TX, CMD_PWM_TEST_TX);
+	
+  return(0);
+}
+
+uint8_t Packet::BuildSwitchPwr(const txt_driver::SwitchedPwr::Request &req)
+{
+  uint8_t data[SIZE_SWITCH_PWR] = {0};
+  
+  data[0] = (uint8_t)req.source;
+  data[1] = (uint8_t)req.on;
+  
+  Build(data, SIZE_SWITCH_PWR, CMD_SWITCH_PWR);
+  
+  return(0);
+}
+
+uint8_t Packet::BuildPwm(const txt_driver::Pwm &msg)
+{
+  uint8_t data[SIZE_PWM] = {0};
+	int32_t temp;
+	
+	temp = (int32_t)(msg.pwm4);
+	data[0] = (uint8_t)(temp >> 24);
+	data[1] = (uint8_t)(temp >> 16);
+	data[2] = (uint8_t)(temp >> 8);
+	data[3] = (uint8_t)(temp & 0x000000FF);
+	
+  temp = (int32_t)(msg.pwm5);
+	data[4] = (uint8_t)(temp >> 24);
+	data[5] = (uint8_t)(temp >> 16);
+	data[6] = (uint8_t)(temp >> 8);
+	data[7] = (uint8_t)(temp & 0x000000FF);
+	
+	Build(data, SIZE_PWM, CMD_PWM);
+  
   return(0);
 }
 

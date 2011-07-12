@@ -4,8 +4,10 @@
 #include "ros/ros.h"
 #include "txt_driver/serial.h"
 #include "txt_driver/txt1.h"
-#include "txt_driver/pid.h"
-#include "txt_driver/pwm.h"
+#include "txt_driver/Pid.h"
+#include "txt_driver/PwmTest.h"
+#include "txt_driver/Pwm.h"
+#include "txt_driver/SwitchedPwr.h"
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
 
@@ -24,9 +26,11 @@ class Packet
 {
 	private:
 		typedef enum {CMD_VEL = 103, CMD_ODOM_ENC = 104, CMD_ODOM_COMB = 105,
-			CMD_BATTERY = 106, CMD_PID_TX = 107, CMD_PWM_TX = 108, CMD_PID_TERMS = 109} COMMANDS;
+			CMD_BATTERY = 106, CMD_PID_TX = 107, CMD_PWM_TEST_TX = 108, CMD_PID_TERMS = 109, 
+			CMD_SWITCH_PWR = 110, CMD_PWM = 111} COMMANDS;
 		typedef enum {SIZE_VEL = 4, SIZE_ODOM_ENC = 20, SIZE_ODOM_COMB = 20,
-			SIZE_BATTERY = 4, SIZE_PID_TX = 24, SIZE_PWM_TX = 12, SIZE_PID_TERMS = 16} SIZES;
+			SIZE_BATTERY = 4, SIZE_PID_TX = 24, SIZE_PWM_TEST_TX = 20, SIZE_PID_TERMS = 16, 
+			SIZE_SWITCH_PWR = 2, SIZE_PWM = 8} SIZES;
 			
     typedef struct {
       uint8_t start_byte_1;
@@ -64,8 +68,10 @@ class Packet
 		uint8_t Build(uint8_t *data, uint8_t dataSize, uint8_t command);
     uint8_t BuildCmdVel(const geometry_msgs::Twist &msg);
     uint8_t BuildCombOdom(const nav_msgs::Odometry &msg);
-    uint8_t BuildPidTx(const txt_driver::pid::Request &req);
-    uint8_t BuildPWMTx(const txt_driver::pwm::Request &req);
+    uint8_t BuildPidTx(const txt_driver::Pid::Request &req);
+    uint8_t BuildPWMTestTx(const txt_driver::PwmTest::Request &req);
+    uint8_t BuildSwitchPwr(const txt_driver::SwitchedPwr::Request &req);
+    uint8_t BuildPwm(const txt_driver::Pwm &msg);
     void Send( Serial * port );
     void Receive( Serial * port );
 };

@@ -1,5 +1,7 @@
 int32 esc
 int32 front
 int32 rear
+int32 pwm4
+int32 pwm5
 ---
 bool result

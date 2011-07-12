@@ -6,9 +6,11 @@
 #include "txt_driver/serial.h"
 #include "txt_driver/Battery.h"
 #include "txt_driver/PidTerms.h"
-#include "txt_driver/pid.h"
-#include "txt_driver/pwm.h"
-#include "txt_driver/shutdown.h"
+#include "txt_driver/Pwm.h"
+#include "txt_driver/Pid.h"
+#include "txt_driver/PwmTest.h"
+#include "txt_driver/Shutdown.h"
+#include "txt_driver/SwitchedPwr.h"
 
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
@@ -31,8 +33,6 @@ public:
 	geometry_msgs::Quaternion odom_quat_;
 	txt_driver::Battery battery_msg_;
 	tf::TransformBroadcaster odom_broadcaster_;
-	txt_driver::pid::Request pid_req_;
-	txt_driver::pwm::Request pwm_req_;
 
   bool shutdown_;
 	Serial * my_serial_;
@@ -44,31 +44,25 @@ public:
 	void pubBattery(double batt1, double batt2);
 	void pubPidTerms(double pterm, double iterm, double dterm, double signal);
 private:
-	ros::Subscriber cmd_vel_sub_;
-	ros::Subscriber comb_odom_sub_;
-	ros::Publisher odom_pub_;
-	ros::Publisher battery_pub_;
-  ros::Publisher pid_terms_pub_;
-	ros::Timer cmd_vel_tmr_;
-	ros::Timer comb_odom_tmr_;
-	ros::ServiceServer pid_srv_;
-	ros::ServiceServer shutdown_srv_;
-	ros::ServiceServer pwm_srv_;
+	ros::Subscriber cmd_vel_sub_, comb_odom_sub_, pwm_sub_;
+	ros::Publisher odom_pub_, battery_pub_, pid_terms_pub_;
+	ros::Timer cmd_vel_tmr_, comb_odom_tmr_;
+	ros::ServiceServer pid_srv_, shutdown_srv_, pwm_test_srv_, switch_pwr_srv_;
 
 	ros::NodeHandle n_;
 	std::string port_;
+	bool pwr_auto_, use_comb_odom_;
 	int comb_odom_cnt_;
-	int COMB_ODOM_CNT_LIMIT_;
+	static const int COMB_ODOM_CNT_LIMIT_ = 5;
 	
-	//int kp_lv_, ki_lv_, kd_lv_, kp_av_, ki_av_, kd_av_;
-
 	void cmdVelCB(const geometry_msgs::TwistConstPtr& msg);
 	void cmdVelTmrCB(const ros::TimerEvent& e);
-//	void combOdomCB(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
-	void combOdomCB(const nav_msgs::OdometryConstPtr &msg);
+	void combOdomCB(nav_msgs::Odometry msg);
 	void combOdomTmrCB(const ros::TimerEvent& e);
-	bool pidSrvCB(txt_driver::pid::Request& request, txt_driver::pid::Response& response);
-	bool pwmSetValsCB(txt_driver::pwm::Request& request, txt_driver::pwm::Response& response);
-	bool shutdownSrvCB(txt_driver::shutdown::Request& request, txt_driver::shutdown::Response& response);
+	void pwmMsgCB(txt_driver::Pwm msg);
+	bool pidSrvCB(txt_driver::Pid::Request& request, txt_driver::Pid::Response& response);
+	bool pwmSetValsCB(txt_driver::PwmTest::Request& request, txt_driver::PwmTest::Response& response);
+	bool shutdownSrvCB(txt_driver::Shutdown::Request& request, txt_driver::Shutdown::Response& response);
+	bool switchPwrCB(txt_driver::SwitchedPwr::Request& request, txt_driver::SwitchedPwr::Response& response);
 };
 #endif
