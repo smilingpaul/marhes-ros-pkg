@@ -55,6 +55,11 @@ int States::GetState(void)
 double States::GetReward(void)
 {
 	double reward = std::abs(light_dir_last_) - std::abs(light_dir_);
+	if (reward == 0.0 && ((light_dir_ > M_PI - 0.1) || (light_dir_ < -M_PI +0.1)))
+	{
+	  reward = -1;
+	}
+	
   light_dir_last_ = light_dir_;
 	return reward;
 }
