@@ -36,7 +36,7 @@ private:
 	QLearner* qobj_;
 	LearningCurve* lc_;
 	
-  ros::Publisher move_pub_, path_pub_;
+  ros::Publisher move_pub_, path_pub_, path_final_pub_, lc_pub_;
 	ros::Subscriber bool_sub_, odom_sub_;
 	ros::Timer timer_;
 	nav_msgs::Path path_msg_;
@@ -82,6 +82,8 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
 
   move_pub_ = n_.advertise<geometry_msgs::Pose>("move_cmd", 1);
   path_pub_ = n_.advertise<nav_msgs::Path>("path", 1);
+  path_final_pub_ = n_.advertise<nav_msgs::Path>("path_final", 1);
+  lc_pub_ = n_.advertise<std_msgs::Float64>("learning_times", 1);
   bool_sub_ = n_.subscribe("move_done", 1, &Experiment::bool_cb, this);
 	odom_sub_ = n.subscribe("base_pose_ground_truth", 10, &Experiment::odom_cb, this);
 	timer_ = n.createTimer(ros::Duration(1/freq_), &Experiment::timer_cb, this);
@@ -124,6 +126,7 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 	{
 	case MODE_REP_START:
 	  actions_->Start();
+ 	  last_time_ = ros::Time::now().toSec();
 		state_ = states_->GetState();
 		action_ = qobj_->GetAction(state_);
 		actions_->Move(action_);
@@ -197,6 +200,12 @@ void Experiment::stopAndMoveToStart(void)
   double x = odom_msg_.pose.pose.position.x, y = odom_msg_.pose.pose.position.y;
   ROS_INFO("X: %f, Y: %f, B0: %f, B1: %f, B2: %f, B3: %f", x, y, bounds_[0], 
            bounds_[1], bounds_[2], bounds_[3]);
+           
+  std_msgs::Float64 timeDiff;
+	timeDiff.data = ros::Time::now().toSec() - last_time_;
+	lc_pub_.publish(timeDiff);
+
+  path_final_pub_.publish(path_msg_);
 	mode_ = MODE_RETURN;
 	ROS_INFO("Completed rep: %d, returning to start location", cnt_rep_); 
 	actions_->Stop();

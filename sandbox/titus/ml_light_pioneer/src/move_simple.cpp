@@ -30,7 +30,7 @@ void MoveSimple::cb_odom(nav_msgs::Odometry msg)
   {
   case MOVE_NONE:
       // Publish move_stop msg
-      bool_msg.data = 0;
+      bool_msg.data = false;
       move_done_pub_.publish(bool_msg);
     break;
   case MOVE_HEADING:

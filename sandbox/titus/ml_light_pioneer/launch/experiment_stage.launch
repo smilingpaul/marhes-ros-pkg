@@ -1,7 +1,7 @@
 <launch>
 
   <node name="experiment_stage" pkg="ml_light_pioneer" type="experiment_stage" output="screen">
-	  <param name="num_reps" value="25" />
+	  <param name="num_reps" value="15" />
     <param name="freq" value="2.0" />
     <param name="goal_radius" value="0.5" />
     <param name="start_radius" value="5.0" />
