@@ -8,6 +8,7 @@
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h"
 #include "nav_msgs/Path.h"
+#include "std_msgs/Float64.h"
 #include "ml_light_pioneer/actions.h"
 #include "ml_light_pioneer/qlearner.h"
 #include "ml_light_pioneer/states.h"
@@ -27,7 +28,7 @@ private:
 	bool move_stopped_, learn_;
 	int num_reps_, cnt_rep_, state_, state_p_, action_, mode_, cnt_timesteps_;
 	double freq_, goal_radius_, start_radius_, reward_, goalx_, goaly_;
-	double bounds_[4];
+	double bounds_[4], last_time_;
 
   enum {MODE_REP_START, MODE_REP, MODE_RETURN, MODE_DONE}; 
 

@@ -38,6 +38,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_executable(move_simple src/move_simple.cpp)
 
+rosbuild_add_executable(light_sensor src/light_sensor.cpp)
+
 rosbuild_add_executable(experiment src/experiment.cpp src/states.cpp src/actions.cpp src/qlearner.cpp src/learning_curve.cpp)
 target_link_libraries(experiment mgl)
 
