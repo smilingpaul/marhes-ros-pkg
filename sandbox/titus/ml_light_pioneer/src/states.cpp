@@ -14,7 +14,7 @@ States::States(ros::NodeHandle nh)
   sub_frls_ = n_.subscribe("frls", 1, &States::cb_frls, this);
   sub_rlls_ = n_.subscribe("rlls", 1, &States::cb_rlls, this);
   sub_rrls_ = n_.subscribe("rrls", 1, &States::cb_rrls, this);
-  tmr_state_ = n_.createTimer(ros::Duration(0.1), &States::cb_tmr_state, this);
+  tmr_state_ = n_.createTimer(ros::Duration(0.02), &States::cb_tmr_state, this);
   vis_pub_ = n_.advertise<visualization_msgs::Marker>("light_marker", 1);
 
   marker_.header.frame_id = "odom";
@@ -44,6 +44,7 @@ States::States(ros::NodeHandle nh)
   sin_ang_ = ydist_ / hyp_;
   light_dir_ = 0;
   light_dir_last_ = 0;
+  //ave_num_ = 3;
 
   ang_inc_ = 2 * M_PI / num_states_;
   ang_start_ = ang_inc_ - M_PI / num_states_ - M_PI;
@@ -58,7 +59,11 @@ int States::GetState(void)
 
 double States::GetReward(void)
 {
-	double reward = light_dir_last_ - light_dir_;
+	double reward = std::abs(light_dir_last_) - std::abs(light_dir_);
+	if (reward <= 0.1 && reward >= -0.1 && ((light_dir_ > M_PI - 0.1) || (light_dir_ < -M_PI +0.1)))
+	{
+	  reward = -1;
+	}
   light_dir_last_ = light_dir_;
 	return reward;
 }
@@ -108,26 +113,58 @@ void States::cb_odom(nav_msgs::Odometry msg)
 
 void States::cb_flls(phidgets_ros::Float64Stamped msg)
 {
-  ls_vals_[FLLS] = msg.data;
+  static double vals[ave_num_];
+  static int point;
+  
+  vals[point++] = msg.data;
+  point = point % ave_num_;
+  ls_vals_[FLLS] = average(vals, ave_num_);
   //ROS_INFO("FLLS: %f", ls_vals_[FLLS]);
 }
 
 void States::cb_frls(phidgets_ros::Float64Stamped msg)
 {
-  ls_vals_[FRLS] = msg.data;
+  static double vals[ave_num_];
+  static int point;
+  
+  vals[point++] = msg.data;
+  point = point % ave_num_;
+  ls_vals_[FRLS] = average(vals, ave_num_);
   //ROS_INFO("FRLS: %f", ls_vals_[FRLS]);
 }
 
 void States::cb_rlls(phidgets_ros::Float64Stamped msg)
 {
-  ls_vals_[RLLS] = msg.data;
+  static double vals[ave_num_];
+  static int point;
+  
+  vals[point++] = msg.data;
+  point = point % ave_num_;
+  ls_vals_[RLLS] = average(vals, ave_num_);
   //ROS_INFO("RLLS: %f", ls_vals_[RLLS]);
 }
 
 void States::cb_rrls(phidgets_ros::Float64Stamped msg)
 {
-  ls_vals_[RRLS] = msg.data;
+  static double vals[ave_num_];
+  static int point;
+  
+  vals[point++] = msg.data;
+  point = point % ave_num_;
+  ls_vals_[RRLS] = average(vals, ave_num_);
   //ROS_INFO("RRLS: %f", ls_vals_[RRLS]);
+}
+
+double States::average(double * dblPtr, int num)
+{
+  double sum = 0.0;
+  for (int i = 0; i < num; i++)
+  {
+    sum += *dblPtr;
+    dblPtr++;
+  }
+  
+  return (sum / num);
 }
 
 /*
