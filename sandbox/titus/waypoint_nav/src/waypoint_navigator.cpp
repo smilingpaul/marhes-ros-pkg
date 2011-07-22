@@ -1,4 +1,4 @@
-#include "ml_follow_pioneer/waypoint_navigator.h"
+#include "waypoint_nav/waypoint_navigator.h"
 
 WaypointNavigator::WaypointNavigator(ros::NodeHandle nh)
 {
