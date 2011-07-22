@@ -1,9 +1,17 @@
 <launch>
   <node name="tester" pkg="txt_tester" type="test_joy_angular" output="screen">
-    <param name="angVelMax" value="2.0" />
+    <param name="linVelMax" value="1.25" />
   </node>
   <node name="joy" pkg="joy" type="joy_node" />
   <node name="txt1" pkg="txt_driver" type="txt_node" >
     <param name="port" value="/dev/ttyUSB1" />
   </node>
+  <node name="pub_lin_vel" pkg="rostopic" type="rostopic" args="pub /lin_vel std_msgs/Float64 0.75" />
+  <!-- For the PID parameters for 0.5 m/s lin vel, enter this into command line
+       rosservice call /pid_change {13,18,0.25,10,28,0.01}
+    -->
+  <!--include file="$(find vicon_vrpn)/launch/vicon_vrpn.launch" />
+  <node name="kalman" pkg="vicon_vrpn" type="vicon_tf_to_odom" >
+    <param name="frame" value="txt01/vicon" />
+  </node-->
 </launch>

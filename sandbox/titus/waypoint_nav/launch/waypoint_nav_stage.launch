@@ -1,0 +1,10 @@
+<launch>
+  <node name="waypoint_nav" pkg="waypoint_nav" type="waypoint_navigator" output="screen">
+    <rosparam file="$(find waypoint_nav)/launch/waypoints_circle.yaml" command="load" />
+    <param name="lin_vel" value="0.5" />
+    <param name="look_ahead" value="0.5" />
+    <remap from="/odom" to="/robot_0/base_pose_ground_truth" />
+    <remap from="/cmd_vel" to="/robot_0/cmd_vel" />
+  </node>
+  <node name="stage" pkg="stage" type="stageros" args="$(find ml_follow_pioneer)/world/square.world" />
+</launch>
