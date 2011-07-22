@@ -4,8 +4,8 @@
   <node name="waypoint_nav" pkg="waypoint_nav" type="waypoint_navigator" output="screen">
     <rosparam file="$(find txt_tester)/launch/waypoints.yaml" command="load" />
     <param name="lin_vel" value="0.5" />
-    <param name="look_ahead" value="0.75" />
-    <remap from="/odom" to="/vo" />
+    <param name="look_ahead" value="1.0" />
+    <remap from="/odom" to="/vo_test" />
     <!--remap from="/cmd_vel" to="/robot_0/cmd_vel" /-->
   </node>
   
@@ -14,10 +14,12 @@
   <node name="vicon_to_odom" pkg="vicon_vrpn" type="vicon_tf_to_odom" >
     <param name="odom_frame" value="vicon_odom" />
     <param name="frame" value="txt01/vicon" />
-    <!--param name="odom_topic" value="base_pose_ground_truth" /-->
+    <param name="odom_topic" value="vo_test" />
   </node>
   
   <node name="odom_to_vicon_odom" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 odom vicon_odom 10" />
   
-  <node name="txt_driver" pkg="txt_driver" type="txt_node" />
+  <node name="txt_driver" pkg="txt_driver" type="txt_node" output="screen">
+    <param name="port" value="/dev/ttyUSB1" />
+  </node>
 </launch>
