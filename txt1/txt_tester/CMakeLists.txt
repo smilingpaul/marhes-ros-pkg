@@ -30,3 +30,5 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 rosbuild_add_executable(test_joy_angular src/test_joy_angular.cpp)
+rosbuild_add_executable(test_vel_steps src/test_vel_steps.cpp)
+rosbuild_add_executable(odom_to_path src/odom_to_path.cpp)
