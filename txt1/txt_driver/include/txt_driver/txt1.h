@@ -8,6 +8,7 @@
 #include "txt_driver/PidTerms.h"
 #include "txt_driver/Pwm.h"
 #include "txt_driver/Pid.h"
+#include "txt_driver/PidLoad.h"
 #include "txt_driver/PwmTest.h"
 #include "txt_driver/Shutdown.h"
 #include "txt_driver/SwitchedPwr.h"
@@ -34,7 +35,7 @@ public:
 	txt_driver::Battery battery_msg_;
 	tf::TransformBroadcaster odom_broadcaster_;
 
-  bool shutdown_;
+  bool shutdown_, pid_confirm_;
 	Serial * my_serial_;
 
 	TXT1(ros::NodeHandle nh);
@@ -43,17 +44,24 @@ public:
 			double vtheta);
 	void pubBattery(double batt1, double batt2);
 	void pubPidTerms(double pterm, double iterm, double dterm, double signal);
+	void rxPidConfirm(void);
+  void rxProcess(void);
 private:
 	ros::Subscriber cmd_vel_sub_, comb_odom_sub_, pwm_sub_;
 	ros::Publisher odom_pub_, battery_pub_, pid_terms_pub_;
 	ros::Timer cmd_vel_tmr_, comb_odom_tmr_;
-	ros::ServiceServer pid_srv_, shutdown_srv_, pwm_test_srv_, switch_pwr_srv_;
+	ros::ServiceServer pid_srv_, pid_load_srv_, shutdown_srv_, pwm_test_srv_, switch_pwr_srv_;
 
 	ros::NodeHandle n_;
 	std::string port_;
 	bool pwr_auto_, use_comb_odom_;
 	int comb_odom_cnt_;
 	static const int COMB_ODOM_CNT_LIMIT_ = 5;
+	static const int LIN_PID_VALS_ = 3;
+	static const int ANG_PID_VALS_ = 4;
+	
+	std::vector<double> lin_pids_, ang_pids_;
+	Packet rxPacket_;
 	
 	void cmdVelCB(const geometry_msgs::TwistConstPtr& msg);
 	void cmdVelTmrCB(const ros::TimerEvent& e);
@@ -64,5 +72,8 @@ private:
 	bool pwmSetValsCB(txt_driver::PwmTest::Request& request, txt_driver::PwmTest::Response& response);
 	bool shutdownSrvCB(txt_driver::Shutdown::Request& request, txt_driver::Shutdown::Response& response);
 	bool switchPwrCB(txt_driver::SwitchedPwr::Request& request, txt_driver::SwitchedPwr::Response& response);
+	bool pidLoadSrvCB(txt_driver::PidLoad::Request& request, txt_driver::PidLoad::Response& response);
+	void processData(msg_u * msg);
+	void loadPids(bool wait);
 };
 #endif
