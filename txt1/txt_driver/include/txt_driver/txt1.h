@@ -52,7 +52,7 @@ private:
 	ros::Timer cmd_vel_tmr_, comb_odom_tmr_;
 	ros::ServiceServer pid_srv_, pid_load_srv_, shutdown_srv_, pwm_test_srv_, switch_pwr_srv_;
 
-	ros::NodeHandle n_;
+	ros::NodeHandle n_, n_private_;
 	std::string port_;
 	bool pwr_auto_, use_comb_odom_;
 	int comb_odom_cnt_;

@@ -10,11 +10,11 @@
 TXT1::TXT1(ros::NodeHandle nh)
 {
 	n_ = nh;
-	ros::NodeHandle n_private("~");
+	n_private_ = ros::NodeHandle("~");
 
 	std::string def = "/dev/ttyUSB0";
-	n_private.param("port", port_, def);
-	n_private.param("pwr_auto", pwr_auto_, false);
+	n_private_.param("port", port_, def);
+	n_private_.param("pwr_auto", pwr_auto_, false);
 		
 	// Initialize variables
 	shutdown_ = false;
@@ -259,7 +259,7 @@ void TXT1::loadPids(bool wait)
 	{
 	  // Get the array
 	  XmlRpc::XmlRpcValue lin_pids;
-	  n_private.getParam("linear_pid", lin_pids);
+	  n_private.getParamCached("linear_pid", lin_pids);
 	  if (lin_pids.getType() != XmlRpc::XmlRpcValue::TypeArray)
 	  {  
 	    ROS_ERROR("Error reading linear_pid list parameter.");
@@ -288,7 +288,7 @@ void TXT1::loadPids(bool wait)
 	{
 	  // Get the array
 	  XmlRpc::XmlRpcValue ang_pids;
-	  n_private.getParam("angular_pid", ang_pids);
+	  n_private.getParamCached("angular_pid", ang_pids);
 	  if (ang_pids.getType() != XmlRpc::XmlRpcValue::TypeArray)
 	  {  
 	    ROS_ERROR("Error reading angular_pid list parameter.");
@@ -296,16 +296,19 @@ void TXT1::loadPids(bool wait)
 	  }
 	  
 	  int size = ang_pids.size();
+	  //ROS_INFO("SIZE: %d", size);
 	  if (size % ANG_PID_VALS_ != 0)
 	  {
 	    ROS_ERROR("The size of the angular pid array is not a multiple of 4, exiting.");
 	    exit(0);
 	  }
-	  
+	  ROS_INFO("Gains: %f, %f, %f, %f", (double)ang_pids[0], (double)ang_pids[1], (double)ang_pids[2], (double)ang_pids[3]);
 	  for (int i = 0; i < size; i++)
 	  {
 	    ang_pids_.push_back((double)ang_pids[i]);
 	  }
+	  
+	  ang_pids.clear();
 	}
 	else
 	{

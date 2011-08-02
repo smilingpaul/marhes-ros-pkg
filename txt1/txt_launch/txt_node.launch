@@ -6,9 +6,12 @@
 	<!--<node name="imu_node" pkg="microstrain_3dmgx2_imu" type="imu_node"
 		args="_port:=/dev/ttyUSB1" /> -->
 
-	<!--node name="txt1_node" pkg="txt_driver" type="txt_node" /-->
+	<node name="txt1_node" pkg="txt_driver" type="txt_node" output="screen">
+	  <param name="port" value="/dev/ttyUSB1" />
+	  <rosparam command="load" file="$(find txt_driver)/config/pid.yaml" />
+	</node>
 	
   <!-- run the odom kalman filter -->
-  <include file="$(find txt_launch)/txt_ekf.launch" />
+  <!--include file="$(find txt_launch)/txt_ekf.launch" /-->
 
 </launch>
