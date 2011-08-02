@@ -30,6 +30,8 @@ public:
     ROS_INFO("%s", frame_.c_str());
     dt_ = 1 / freq_;
     last_theta_ = 0.0;
+    
+    v1 = v2 = v3 = v4 = w1 = w2 = w3 = w4 = 0.0;
 
     odom_pub_ = n.advertise<nav_msgs::Odometry>(odom_topic_.c_str(), 50);
     odom_filter_pub_ = n.advertise<nav_msgs::Odometry>(odom_filter_topic_.c_str(), 50); 
@@ -81,10 +83,16 @@ public:
 		  odom_msg.twist.twist.linear.z = 0.0;
 		  odom_msg.twist.twist.angular.z = (tf::getYaw(transform.getRotation()) - 
 		      tf::getYaw(last_transform_.getRotation())) / dt_;
+		      
+ 		  odom_msg.twist.twist.linear.x = (odom_msg.twist.twist.linear.x + v1 + v2 + v3 + v4) / 5;
+		  odom_msg.twist.twist.angular.z = (odom_msg.twist.twist.angular.z + w1 + w2 + w3 + w4) / 5;
 
 		  //publish the message
 		  odom_pub_.publish(odom_msg);
 		  last_transform_ = transform;
+		  
+		  v4 = v3; v3 = v2; v2 = v1; v1 = odom_msg.twist.twist.linear.x;
+      w4 = w3; w3 = w2; w2 = w1; w1 = odom_msg.twist.twist.angular.z;
     }
   }
 private:
@@ -99,7 +107,7 @@ private:
 //  bool bool_tf_;
   CvKalman* kalman_;
   CvMat* z_;
-
+  double v1, v2, v3, v4, w1, w2, w3, w4;
 };
 
 int main(int argc, char **argv)
