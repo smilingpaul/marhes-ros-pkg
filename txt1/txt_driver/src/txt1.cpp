@@ -15,10 +15,10 @@ TXT1::TXT1(ros::NodeHandle nh)
 	std::string def = "/dev/ttyUSB0";
 	n_private.param("port", port_, def);
 	n_private.param("pwr_auto", pwr_auto_, false);
-	// TODO: Add PID Gains Parameter table
-	
+		
 	// Initialize variables
 	shutdown_ = false;
+	pid_confirm_ = false;
 
   // Initialize the subscribers
 	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1, &TXT1::cmdVelCB, this);
@@ -38,6 +38,7 @@ TXT1::TXT1(ros::NodeHandle nh)
 	pid_terms_pub_ = n_.advertise<txt_driver::PidTerms>("/pid_terms", 1);
 
 	pid_srv_ = n_.advertiseService("/pid_change", &TXT1::pidSrvCB, this);
+	pid_load_srv_ = n_.advertiseService("/pid_load", &TXT1::pidLoadSrvCB, this);
   shutdown_srv_ = n_.advertiseService("/shutdown_computer", &TXT1::shutdownSrvCB, this);
   pwm_test_srv_ = n_.advertiseService("/pwm_change", &TXT1::pwmSetValsCB, this);
   switch_pwr_srv_ = n_.advertiseService("/switched_pwr", &TXT1::switchPwrCB, this);
@@ -54,6 +55,8 @@ TXT1::TXT1(ros::NodeHandle nh)
  		ROS_INFO("Serial Port: %s is Opened.", port_.c_str());
  	else
  		ROS_ERROR("Failed to open port: %s.", port_.c_str());
+ 		
+ 	loadPids(true);
 }
 
 TXT1::~TXT1()
@@ -223,29 +226,190 @@ bool TXT1::switchPwrCB(txt_driver::SwitchedPwr::Request& request, txt_driver::Sw
   return true;
 }
 
-TXT1 *p;
+bool TXT1::pidLoadSrvCB(txt_driver::PidLoad::Request& request, txt_driver::PidLoad::Response& response)
+{
+  loadPids(true);
+  response.result = true;
+  return true;
+}
+
+void TXT1::rxPidConfirm(void)
+{
+  ROS_INFO("Called");
+  pid_confirm_ = true;
+  ROS_INFO("Reached");
+}
+
+void TXT1::rxProcess(void)
+{
+  msg_u * msg = rxPacket_.Receive(my_serial_);
+  if (msg != NULL)
+  {
+    processData(msg);
+  }
+}
+
+void TXT1::loadPids(bool wait)
+{
+  ros::NodeHandle n_private("~");
+  lin_pids_.clear();
+  ang_pids_.clear();
+  
+  if (n_private.hasParam("linear_pid"))
+	{
+	  // Get the array
+	  XmlRpc::XmlRpcValue lin_pids;
+	  n_private.getParam("linear_pid", lin_pids);
+	  if (lin_pids.getType() != XmlRpc::XmlRpcValue::TypeArray)
+	  {  
+	    ROS_ERROR("Error reading linear_pid list parameter.");
+	    exit(0);
+	  }
+	  
+	  int size = lin_pids.size();
+	  if (size != LIN_PID_VALS_)
+	  {
+	    ROS_ERROR("The size of the linear pid array is not 3, exiting.");
+	    exit(0);
+	  }
+	  
+	  for (int i = 0; i < size; i++)
+	  {
+	    lin_pids_.push_back((double)lin_pids[i]);
+	  }
+	}
+	else
+	{
+	  ROS_ERROR("Linear PID values not set, exiting.");
+	  exit(0);
+	}
+	
+	if (n_private.hasParam("angular_pid"))
+	{
+	  // Get the array
+	  XmlRpc::XmlRpcValue ang_pids;
+	  n_private.getParam("angular_pid", ang_pids);
+	  if (ang_pids.getType() != XmlRpc::XmlRpcValue::TypeArray)
+	  {  
+	    ROS_ERROR("Error reading angular_pid list parameter.");
+	    exit(0);
+	  }
+	  
+	  int size = ang_pids.size();
+	  if (size % ANG_PID_VALS_ != 0)
+	  {
+	    ROS_ERROR("The size of the angular pid array is not a multiple of 4, exiting.");
+	    exit(0);
+	  }
+	  
+	  for (int i = 0; i < size; i++)
+	  {
+	    ang_pids_.push_back((double)ang_pids[i]);
+	  }
+	}
+	else
+	{
+	  ROS_ERROR("Angular PID values not set, exiting.");
+	  exit(0);
+	}
+	
+	// Send PID gains to TXT1 robot.  Then wait for a response timeout.
+  Packet packet;
+  packet.BuildPid(lin_pids_, ang_pids_);
+  
+  if (wait)
+  { 
+    ros::Duration sleep_dur(0.25);
+    pid_confirm_ = false;
+    
+    while (pid_confirm_ == false && ros::ok())
+    {
+      packet.Send(my_serial_);
+      ROS_INFO("Sending TXT1 parameters ...");
+      sleep_dur.sleep();
+      rxProcess();
+    }  
+  }
+  else
+  {
+    packet.Send(my_serial_);
+    ROS_INFO("Sending TXT1 parameters ...");
+  }
+}
+
+void TXT1::processData(msg_u * msg)
+{
+	double xpos, ypos, theta, linvel, angvel, batt1, batt2, pterm, iterm, dterm, signal;
+
+	switch(msg->var.header.var.command)
+	{
+		case CMD_ODOM_ENC:
+			if (msg->var.header.var.length != SIZE_ODOM_ENC)
+				break;
+
+			xpos = (double)((msg->var.data[0] << 24) + (msg->var.data[1] << 16) + (msg->var.data[2] << 8) + msg->var.data[3]) / 1000;
+			ypos = (double)((msg->var.data[4] << 24) + (msg->var.data[5] << 16) + (msg->var.data[6] << 8) + msg->var.data[7]) / 1000;
+			theta = (double)((msg->var.data[8] << 24) + (msg->var.data[9] << 16) + (msg->var.data[10] << 8) + msg->var.data[11]) / 1000;
+			linvel = (double)((msg->var.data[12] << 24) + (msg->var.data[13] << 16) + (msg->var.data[14] << 8) + msg->var.data[15]) / 1000;
+			angvel = (double)((msg->var.data[16] << 24) + (msg->var.data[17] << 16) + (msg->var.data[18] << 8) + msg->var.data[19]) / 1000;
+			pubOdom(xpos, ypos, theta, linvel, angvel);
+			break;
+		case CMD_BATTERY:
+			if (msg->var.header.var.length != SIZE_BATTERY)
+				break;
+
+			batt1 = (double)((msg->var.data[0] << 8) + msg->var.data[1]) / 1000;
+			batt2 = (double)((msg->var.data[2] << 8) + msg->var.data[3]) / 1000;
+
+			pubBattery(batt1, batt2);
+			break;
+		case CMD_PID_TERMS:
+		  if (msg->var.header.var.length != SIZE_PID_TERMS)
+		    break;
+		    
+		    pterm = (double)((msg->var.data[0] << 24) + (msg->var.data[1] << 16) + 
+		                     (msg->var.data[2] << 8) + msg->var.data[3]);
+ 		    iterm = (double)((msg->var.data[4] << 24) + (msg->var.data[5] << 16) + 
+		                     (msg->var.data[6] << 8) + msg->var.data[7]);
+ 		    dterm = (double)((msg->var.data[8] << 24) + (msg->var.data[9] << 16) + 
+		                     (msg->var.data[10] << 8) + msg->var.data[11]);
+ 		    signal = (double)((msg->var.data[12] << 24) + (msg->var.data[13] << 16) + 
+		                     (msg->var.data[14] << 8) + msg->var.data[15]);
+		    pubPidTerms(pterm, iterm, dterm, signal);
+		  break;
+		case CMD_PID:
+		  if (msg->var.header.var.length != 1)
+		    break;
+		  if (msg->var.data[0] == MSG_DATA_GOOD)
+		  {
+		    pid_confirm_ = true;		  
+		    ROS_INFO("Received parameter response.");
+	    }
+	    else
+	    {
+	      ROS_INFO("Error receiving parameter response.");
+	    }
+		  break;		    
+		default:
+			break;
+	}
+}
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "TXT1");
   ros::NodeHandle n;
 
-  p = new TXT1(n);
-  Packet rxPacket;
+  TXT1 * p = new TXT1(n);
   ros::Rate loop_rate(100);
 
   while (ros::ok())
   {
-    //rxPacket.Receive(p->my_serial_);
+    p->rxProcess();
 
     ros::spinOnce();
     loop_rate.sleep();
   }
-  
-  //ros::MultiThreadedSpinner spinner(4); // Use 4 threads
-  //spinner.spin(); // spin() will not return until the node has been shutdown
-  
-  //ros::spin();
   
   // Do this to make sure the computer shuts down when batteries are bad
   // Modify your /etc/sudoers file by adding a line like this:-

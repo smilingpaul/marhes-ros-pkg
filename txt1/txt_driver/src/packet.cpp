@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "txt_driver/packet.h"
 
-extern TXT1* p;
+//extern TXT1* p;
 
 Packet::Packet()
 {
@@ -120,6 +120,49 @@ uint8_t Packet::BuildCombOdom(const nav_msgs::Odometry &msg)
 	Build(data, SIZE_ODOM_COMB, CMD_ODOM_COMB);
 
 	return(0);
+}
+
+bool Packet::BuildPid(std::vector<double> lin, std::vector<double> ang)
+{
+  uint8_t data[SIZE_PID_MAX] = {0};
+  int32_t temp;
+  bool retValue = false;
+  
+  if ((lin.size() != 3) && (ang.size() % 4 != 0))
+  {
+    ROS_ERROR("Can't send the pid message, arrays are not the right size.");
+  }
+  else if (ang.size() > SIZE_PID_MAX / 4 - 3)
+  {
+    ROS_ERROR("Can't send the pid message, angular array is too large.");
+  }
+  else
+  {
+    // Add lin pids to message
+    for (int i = 0; i < 3; i++)
+    {
+      temp = (int32_t)(lin[i] * 1000);
+      data[4 * i + 0] = (uint8_t)(temp >> 24);
+      data[4 * i + 1] = (uint8_t)(temp >> 16);
+      data[4 * i + 2] = (uint8_t)(temp >> 8);
+      data[4 * i + 3] = (uint8_t)(temp & 0x000000FF);
+    }
+    
+    // Add angular velocities to message
+    for (int i = 0; i < ang.size(); i++)
+    {
+      temp = (int32_t)(ang[i] * 1000);
+      data[4 * i + 12] = (uint8_t)(temp >> 24);
+      data[4 * i + 13] = (uint8_t)(temp >> 16);
+      data[4 * i + 14] = (uint8_t)(temp >> 8);
+      data[4 * i + 15] = (uint8_t)(temp & 0x000000FF);
+    }   
+    
+    retValue = true;
+  }
+  
+  Build(data, 12 + ang.size() * 4, CMD_PID);
+  return retValue;
 }
 
 uint8_t Packet::BuildPidTx(const txt_driver::Pid::Request &req)
@@ -325,8 +368,10 @@ void Packet::Send( Serial * port )
 	}
 }
 
-void Packet::Receive( Serial * port )
+msg_u * Packet::Receive( Serial * port )
 {
+  msg_u* retMsg = NULL;
+
 	while ((dataNum_ < MAX_PACKET_SIZE) && (port->Read(&msg_.bytes[dataNum_], 1) > 0))
 	{
 		if (dataNum_ == 0)						// Read the packet header
@@ -356,7 +401,7 @@ void Packet::Receive( Serial * port )
       {                                 // then data.
         if(Check())
         {
-          ProcessData();
+          retMsg = &msg_;
           totalPkts_++;
           dataNum_ = 0;
         }
@@ -373,50 +418,6 @@ void Packet::Receive( Serial * port )
 
 	if (dataNum_ >= MAX_PACKET_SIZE)
 		dataNum_ = 0;
-}
-
-void Packet::ProcessData()
-{
-	double xpos, ypos, theta, linvel, angvel, batt1, batt2, pterm, iterm, dterm, signal;
-
-	switch(msg_.var.header.var.command)
-	{
-		case CMD_ODOM_ENC:
-			if (msg_.var.header.var.length != SIZE_ODOM_ENC)
-				break;
-
-			xpos = (double)((msg_.var.data[0] << 24) + (msg_.var.data[1] << 16) + (msg_.var.data[2] << 8) + msg_.var.data[3]) / 1000;
-			ypos = (double)((msg_.var.data[4] << 24) + (msg_.var.data[5] << 16) + (msg_.var.data[6] << 8) + msg_.var.data[7]) / 1000;
-			theta = (double)((msg_.var.data[8] << 24) + (msg_.var.data[9] << 16) + (msg_.var.data[10] << 8) + msg_.var.data[11]) / 1000;
-			linvel = (double)((msg_.var.data[12] << 24) + (msg_.var.data[13] << 16) + (msg_.var.data[14] << 8) + msg_.var.data[15]) / 1000;
-			angvel = (double)((msg_.var.data[16] << 24) + (msg_.var.data[17] << 16) + (msg_.var.data[18] << 8) + msg_.var.data[19]) / 1000;
-			p->pubOdom(xpos, ypos, theta, linvel, angvel);
-			break;
-		case CMD_BATTERY:
-			if (msg_.var.header.var.length != SIZE_BATTERY)
-				break;
-
-			batt1 = (double)((msg_.var.data[0] << 8) + msg_.var.data[1]) / 1000;
-			batt2 = (double)((msg_.var.data[2] << 8) + msg_.var.data[3]) / 1000;
-
-			p->pubBattery(batt1, batt2);
-			break;
-		case CMD_PID_TERMS:
-		  if (msg_.var.header.var.length != SIZE_PID_TERMS)
-		    break;
-		    
-		    pterm = (double)((msg_.var.data[0] << 24) + (msg_.var.data[1] << 16) + 
-		                     (msg_.var.data[2] << 8) + msg_.var.data[3]);
- 		    iterm = (double)((msg_.var.data[4] << 24) + (msg_.var.data[5] << 16) + 
-		                     (msg_.var.data[6] << 8) + msg_.var.data[7]);
- 		    dterm = (double)((msg_.var.data[8] << 24) + (msg_.var.data[9] << 16) + 
-		                     (msg_.var.data[10] << 8) + msg_.var.data[11]);
- 		    signal = (double)((msg_.var.data[12] << 24) + (msg_.var.data[13] << 16) + 
-		                     (msg_.var.data[14] << 8) + msg_.var.data[15]);
-		    p->pubPidTerms(pterm, iterm, dterm, signal);
-		  break;			
-		default:
-
-			break;
-	}
+		
+  return retMsg;
 }
