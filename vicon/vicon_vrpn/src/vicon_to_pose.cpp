@@ -52,12 +52,15 @@ int main(int argc, char **argv)
 
   // Variable declaration
   string host_addr, tf_ref_frame, subject, address;
-  ros::Rate loop_rate(50);
+  double freq;
   vrpn_Tracker_Remote *tkr;
   
   // Get parameters
   n_private.param("host_addr", host_addr, string("Vicon"));
-  n_private.param("tf_ref_frame", tf_ref_frame, string("/vicon_world"));     
+  n_private.param("tf_ref_frame", tf_ref_frame, string("/odom"));     
+  n_private.param("freq", freq, 50.0);
+  
+  ros::Rate loop_rate(freq);
   
   // Check and get the subject list
   if (!n_private.hasParam("subject"))

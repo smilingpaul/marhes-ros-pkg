@@ -1,17 +1,21 @@
 <launch>
 
-  <!-- Launch the VICON Node with its configuration file -->
-  <include file="$(find vicon_vrpn)/launch/vicon_vrpn.launch" />
-  
-  <!-- Launch the tf to odom pkg to get velocities -->
-  <node name="vicon_tf_to_odom" pkg="vicon_vrpn" type="vicon_tf_to_odom">
-    <param name="frame" value="/txt01/vicon" />
+  <!-- Launch the VICON Node -->
+  <node name="vicon_pose" pkg="vicon_vrpn" type="vicon_to_pose" >
+    <param name="subject" value="txt01" />
+    <param name="freq" value="100.0" />
+    <param name="host_addr" value="Vicon" />
+    <param name="tf_ref_frame" value="/odom" />
   </node>
   
-  <!-- Launch the txt node with ekf -->
-  <node name="txt_driver" pkg="txt_driver" type="txt_node">
-    <param name="port" value="/dev/ttyUSB1" />
+  <!-- Launch the Kalman Filter to get the velocity information -->
+  <node name="pose_to_odom" pkg="vicon_vrpn" type="vicon_pose_to_odom" >
+    <param name="odom_frame" value="/odom" />
+    <param name="odom_topic" value="/odom" />
+    <param name="freq" value="75.0" />
+    <remap from="/odom" to="/vo" />
   </node>
-  <!--include file="$(find txt_launch)/txt_node.launch" /-->
+  
+  <include file="$(find txt_launch)/txt_node.launch" />
 
 </launch>
