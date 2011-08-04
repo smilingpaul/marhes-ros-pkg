@@ -41,7 +41,7 @@ public:
   void UpdateOdom(const ros::TimerEvent& event)
   {
     tf::StampedTransform transform;
-    double d_theta, theta, vx, vy, theta_max, theta_min, theta_v;  //double vx, vtheta, dt;
+    double d_theta;
     bool test = false;
 
     try

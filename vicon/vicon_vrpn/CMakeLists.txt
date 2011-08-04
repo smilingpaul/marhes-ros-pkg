@@ -35,5 +35,10 @@ link_directories(${PROJECT_SOURCE_DIR}/lib32 ${PROJECT_SOURCE_DIR}/lib64)
 
 rosbuild_add_executable(vicon_vrpn src/vicon_vrpn_node.cpp)
 target_link_libraries(vicon_vrpn vrpn)
+
 rosbuild_add_executable(vicon_tf_to_odom src/vicon_tf_to_odom.cpp)
 rosbuild_add_executable(vicon_diff_odom src/vicon_diff_odom.cpp)
+rosbuild_add_executable(vicon_pose_to_odom src/vicon_pose_to_odom.cpp)
+
+rosbuild_add_executable(vicon_to_pose src/vicon_to_pose.cpp)
+target_link_libraries(vicon_to_pose vrpn)

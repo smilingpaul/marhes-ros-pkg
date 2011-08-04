@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   tkr->register_change_handler(tc, handle_tracker_pos_quat);
 
   ROS_INFO("Tracking subject at: %s", address.c_str());
-  pose_pub = n.advertise<geometry_msgs::PoseStamped>("pose_vicon", 1);
+  pose_pub = n.advertise<geometry_msgs::PoseStamped>("pose", 1);
 
 /* 
  * main interactive loop

@@ -15,6 +15,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
 
+#include "ros/ros.h"
 #include <robot_odom_ekf/nonlinearanalyticconditionalgaussianodo.h>
 #include <wrappers/rng/rng.h> // Wrapper around several rng
                               // libraries
@@ -27,11 +28,11 @@ namespace BFL
 
   NonLinearAnalyticConditionalGaussianOdo::NonLinearAnalyticConditionalGaussianOdo(const Gaussian& additiveNoise)
     : AnalyticConditionalGaussianAdditiveNoise(additiveNoise,NUMCONDARGUMENTS_MOBILE),
-      df(8,8)
+      df(6,6)
   {
     // initialize df matrix
-    for (unsigned int i=1; i<=8; i++){
-      for (unsigned int j=1; j<=8; j++){
+    for (unsigned int i=1; i<=6; i++){
+      for (unsigned int j=1; j<=6; j++){
 	if (i==j) df(i,j) = 1;
 	else df(i,j) = 0;
       }
@@ -48,6 +49,7 @@ namespace BFL
     state(1) += cos(state(6)) * vel(1);
     state(2) += sin(state(6)) * vel(1);
     state(6) += vel(2);
+    ROS_INFO("LinVel: %f, AngVel: %f", vel(0), vel(1));
     return state + AdditiveNoiseMuGet();
   }
 
