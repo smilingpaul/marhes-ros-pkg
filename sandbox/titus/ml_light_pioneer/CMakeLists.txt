@@ -41,7 +41,7 @@ rosbuild_add_executable(move_simple src/move_simple.cpp)
 rosbuild_add_executable(light_sensor src/light_sensor.cpp)
 
 rosbuild_add_executable(experiment src/experiment.cpp src/states.cpp src/actions.cpp src/qlearner.cpp src/learning_curve.cpp)
-target_link_libraries(experiment mgl)
+#target_link_libraries(experiment mgl)
 
 rosbuild_add_executable(experiment_stage src/experiment_stage.cpp src/states_stage.cpp src/actions.cpp src/qlearner.cpp src/learning_curve.cpp)
-target_link_libraries(experiment_stage mgl)
+#target_link_libraries(experiment_stage mgl)
