@@ -30,3 +30,9 @@ rosbuild_gensrv()
 #target_link_libraries(example ${PROJECT_NAME})
 
 rosbuild_add_executable(txt_node src/txt1.cpp src/packet.cpp src/serial.cpp)
+
+# add dynamic reconfigure api
+rosbuild_find_ros_package(dynamic_reconfigure)
+include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg()
+rosbuild_add_executable(dynamic_reconfigure_node src/dynamic_reconfigure_node.cpp)

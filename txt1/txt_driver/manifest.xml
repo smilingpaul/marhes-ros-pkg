@@ -13,6 +13,8 @@
   <depend package="std_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="tf"/>
+  <depend package="dynamic_reconfigure" />
+  <depend package="driver_base" />
 
 </package>
 

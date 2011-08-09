@@ -18,7 +18,7 @@
     
     <param name="ang_vel_lim" value="1.0" />            
              
-    <param name="learning_rate" value="0.1" />            
+    <param name="learning_rate" value="0.3" />            
     <param name="discount_factor" value="0.5" />            
     <param name="temp_const" value="5.0" />            
     <param name="temp_alpha" value="0.65" />   
@@ -27,7 +27,7 @@
     <param name="ydist" value="6 / 0.0254" /> 
     
     <!--rosparam file="$(find ml_light_pioneer)/launch/qtable.yaml" command="load" /-->
-    <rosparam file="$(find ml_light_pioneer)/launch/qtableHardware.yaml" command="load" />
+    <!--rosparam file="$(find ml_light_pioneer)/launch/qtableHardware.yaml" command="load" /-->
           
     <remap to="/interface_kit/95283/sensor/4" from="flls"/>
     <remap to="/interface_kit/95283/sensor/5" from="frls"/>
@@ -40,6 +40,8 @@
     <param name="max_lin_vel" value="0.5" />
     <param name="max_ang_vel" value="1.0" />
   </node>
+  
+  <node name="motor_state_pub" pkg="rostopic" type="rostopic" args="pub /cmd_motor_state p2os_driver/MotorState 1" />
   
   <node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="Pioneer02"/>
 
