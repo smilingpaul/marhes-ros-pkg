@@ -45,22 +45,61 @@ States::States(ros::NodeHandle nh)
   ang_start_ = ang_inc_ - M_PI / num_states_ - M_PI;
 
   state_ = 0;
+  state_last_ = 0;
 }
+
+/*
+     6
+   7   5
+ 0       4
+   1   3
+     2
+ */
 
 int States::GetState(void)
 {
-  return state_; 
+  return state_;
 }
 
 double States::GetReward(void)
 {
-	double reward = std::abs(light_dir_last_) - std::abs(light_dir_);
-	if (reward == 0.0 && ((light_dir_ > M_PI - 0.1) || (light_dir_ < -M_PI +0.1)))
-	{
-	  reward = -1;
-	}
+  double reward;
+	//double reward = std::abs(light_dir_last_) - std::abs(light_dir_);
+	//if (reward == 0.0 && ((light_dir_ > M_PI - 0.1) || (light_dir_ < -M_PI +0.1)))
+	//{
+	//  reward = -1;
+	//}
+	
+	//if (reward == 0)
+	//  reward = 0;
+	//else if (reward > 0)
+	//  reward = 1
+	//else
+	//  reward = -1;
+	
+  //if (state_last_ == state_ && state_ == num_states_ / 2)
+  //  reward = 1;
+  //else if (state_ == 0)
+  //  reward = -1;
+  //else
+  //  reward = 0;
+  
+  int temp_state_last = state_last_ - num_states_ / 2;
+  int temp_state = state_ - num_states_ / 2;
+    
+  if (temp_state_last == temp_state && temp_state == 0)
+    reward = 1;
+  else if (temp_state_last == temp_state && temp_state == -num_states_ / 2)
+    reward = -1;
+  else if (temp_state_last == temp_state)
+    reward = 0;
+  else if (std::abs(temp_state_last) - std::abs(temp_state) > 0)
+    reward = 1;
+  else
+    reward = -1;
 	
   light_dir_last_ = light_dir_;
+  state_last_ = state_; 
 	return reward;
 }
 

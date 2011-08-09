@@ -26,7 +26,7 @@ private:
   ros::Timer tmr_state_;
   nav_msgs::Odometry odom_msg_;
   visualization_msgs::Marker marker_;
-  int state_, num_states_;
+  int state_, state_last_, num_states_;
   static const int ave_num_ = 3;
   double ls_vals_[4], xdist_, ydist_, hyp_, cos_ang_, sin_ang_;
   double light_dir_, light_dir_last_, ang_inc_, ang_start_;

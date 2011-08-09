@@ -24,7 +24,7 @@
     
     <param name="xdist" value="8 / 0.0254" />   
     <param name="ydist" value="6 / 0.0254" /> 
-    <rosparam file="$(find ml_light_pioneer)/launch/qtable.yaml" command="load" />
+    <!--rosparam file="$(find ml_light_pioneer)/launch/qtable.yaml" command="load" /-->
   
   </node>
   
