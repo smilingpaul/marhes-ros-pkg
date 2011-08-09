@@ -2,7 +2,7 @@
 #define LEARNING_CURVE_H
 
 #include "ros/ros.h"
-#include <mgl/mgl_zb.h>
+//#include <mgl/mgl_zb.h>
 #include <vector>
 
 class LearningCurve
@@ -16,9 +16,9 @@ public:
 private:
   int episode_;
   std::vector<int> steps_;
-  mglGraph *gr_;
+  //mglGraph *gr_;
   
-  void Plot(mglData y);
+  //void Plot(mglData y);
 };
 
 #endif

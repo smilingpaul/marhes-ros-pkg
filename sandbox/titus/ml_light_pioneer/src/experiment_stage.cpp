@@ -170,7 +170,7 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 			mode_ = MODE_DONE;
 		break;
 	case MODE_DONE:
-	  lc_->ShowImage();
+	  //lc_->ShowImage();
 	  exit(1);
 		break;
 	}
