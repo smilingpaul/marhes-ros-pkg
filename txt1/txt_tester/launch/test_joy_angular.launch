@@ -5,15 +5,7 @@
   
   <node name="joy" pkg="joy" type="joy_node" />
   
-  <!-- include file="$(find txt_launch)/txt_node.launch" /-->
+  <include file="$(find txt_launch)/txt_vicon.launch" />
   
   <!--node name="pub_lin_vel" pkg="rostopic" type="rostopic" args="pub /lin_vel std_msgs/Float64 0.75" /-->
-  
-  <!-- For the PID parameters for 0.5 m/s lin vel, enter this into command line
-       rosservice call /pid_change {13,18,0.25,10,28,0.01}
-    -->
-  <!--include file="$(find vicon_vrpn)/launch/vicon_vrpn.launch" />
-  <node name="kalman" pkg="vicon_vrpn" type="vicon_tf_to_odom" >
-    <param name="frame" value="txt01/vicon" />
-  </node-->
 </launch>
