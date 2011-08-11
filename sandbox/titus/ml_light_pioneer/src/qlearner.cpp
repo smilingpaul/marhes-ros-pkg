@@ -63,7 +63,7 @@ QLearner::QLearner(ros::NodeHandle nh)
     }
   } 
   
-  //ROS_INFO("%s", PrintTable().c_str()); 
+  ROS_INFO("%s", PrintTable().c_str()); 
 }
 
 void QLearner::Update(double reward, int state, int state_p, int action)
