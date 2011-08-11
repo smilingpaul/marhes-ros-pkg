@@ -33,6 +33,6 @@
     <param name="max_ang_vel" value="1.0" />
   </node>
   
-  <node name="stage_node" pkg="stage" type="stageros" args="$(find ml_light_pioneer)/world/square.world" output="screen" />
+  <!--node name="stage_node" pkg="stage" type="stageros" args="$(find ml_light_pioneer)/world/square.world" output="screen" /-->
 
 </launch>
