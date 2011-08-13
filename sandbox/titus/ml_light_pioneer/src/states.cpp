@@ -8,6 +8,7 @@ States::States(ros::NodeHandle nh)
   n_private.param("num_states", num_states_, 8);
   n_private.param("xdist", xdist_, 8 / 0.0254);
   n_private.param("ydist", ydist_, 6 / 0.0254);
+  n_private.param("alpha", alpha_, 0.3);
 
   sub_odom_ = n_.subscribe("base_pose_ground_truth", 1, &States::cb_odom, this);
   sub_flls_ = n_.subscribe("flls", 1, &States::cb_flls, this);
@@ -133,6 +134,7 @@ void States::cb_odom(nav_msgs::Odometry msg)
 
 void States::cb_flls(phidgets_ros::Float64Stamped msg)
 {
+/*
   static double vals[ave_num_];
   static int point;
   
@@ -140,10 +142,14 @@ void States::cb_flls(phidgets_ros::Float64Stamped msg)
   point = point % ave_num_;
   ls_vals_[FLLS] = average(vals, ave_num_);
   //ROS_INFO("FLLS: %f", ls_vals_[FLLS]);
+*/
+
+  ls_vals_[FLLS] = alpha_ * ls_vals_[FLLS] + (1 - alpha_) * msg.data;
 }
 
 void States::cb_frls(phidgets_ros::Float64Stamped msg)
 {
+/*
   static double vals[ave_num_];
   static int point;
   
@@ -151,10 +157,14 @@ void States::cb_frls(phidgets_ros::Float64Stamped msg)
   point = point % ave_num_;
   ls_vals_[FRLS] = average(vals, ave_num_);
   //ROS_INFO("FRLS: %f", ls_vals_[FRLS]);
+*/
+
+  ls_vals_[FRLS] = alpha_ * ls_vals_[FRLS] + (1 - alpha_) * msg.data;
 }
 
 void States::cb_rlls(phidgets_ros::Float64Stamped msg)
 {
+/*
   static double vals[ave_num_];
   static int point;
   
@@ -162,10 +172,14 @@ void States::cb_rlls(phidgets_ros::Float64Stamped msg)
   point = point % ave_num_;
   ls_vals_[RLLS] = average(vals, ave_num_);
   //ROS_INFO("RLLS: %f", ls_vals_[RLLS]);
+*/
+
+  ls_vals_[RLLS] = alpha_ * ls_vals_[RLLS] + (1 - alpha_) * msg.data;
 }
 
 void States::cb_rrls(phidgets_ros::Float64Stamped msg)
 {
+/*
   static double vals[ave_num_];
   static int point;
   
@@ -173,6 +187,9 @@ void States::cb_rrls(phidgets_ros::Float64Stamped msg)
   point = point % ave_num_;
   ls_vals_[RRLS] = average(vals, ave_num_);
   //ROS_INFO("RRLS: %f", ls_vals_[RRLS]);
+*/
+
+  ls_vals_[RRLS] = alpha_ * ls_vals_[RRLS] + (1 - alpha_) * msg.data;
 }
 
 double States::average(double * dblPtr, int num)

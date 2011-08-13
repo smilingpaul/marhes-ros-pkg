@@ -7,6 +7,7 @@ Actions::Actions(ros::NodeHandle nh)
   ros::NodeHandle n_private("~");
   n_private.param("num_actions", num_actions_, 3);
   n_private.param("ang_vel_lim", ang_vel_lim_, 1.0);
+  n_private.param("lin_vel", lin_vel_, 0.3);
 
   vel_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
   tmr_vel_ = n_.createTimer(ros::Duration(1 / 20), &Actions::timer_cb, this);
@@ -24,7 +25,7 @@ void Actions::Move(int action)
 {
   if (action >= 0 && action < num_actions_)
   {
-    vel_msg_.linear.x = 0.3;
+    vel_msg_.linear.x = lin_vel_;
     vel_msg_.angular.z = ang_vels_[action];
   }
 }
@@ -42,6 +43,11 @@ void Actions::Stop(void)
 int Actions::GetNumActions(void)
 {
 	return num_actions_;
+}
+
+geometry_msgs::Twist Actions::GetVel(void)
+{
+  return vel_msg_;
 }
 
 void Actions::timer_cb(const ros::TimerEvent& event)

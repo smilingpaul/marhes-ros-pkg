@@ -12,7 +12,7 @@
 #include "ml_light_pioneer/actions.h"
 #include "ml_light_pioneer/qlearner.h"
 #include "ml_light_pioneer/states_stage.h"
-#include "ml_light_pioneer/learning_curve.h"
+//#include "ml_light_pioneer/learning_curve.h"
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/Pose.h"
 
@@ -34,7 +34,7 @@ private:
 	States* states_;
 	Actions* actions_;
 	QLearner* qobj_;
-	LearningCurve* lc_;
+	//LearningCurve* lc_;
 	
   ros::Publisher move_pub_, path_pub_, path_final_pub_, lc_pub_;
 	ros::Subscriber bool_sub_, odom_sub_;
@@ -76,7 +76,7 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
 	states_ = new States(n);
 	actions_ = new Actions(n);
 	qobj_ = new QLearner(n);
-	lc_ = new LearningCurve();
+	//lc_ = new LearningCurve();
 	
 	path_msg_.header.frame_id = "odom";
 
@@ -207,7 +207,7 @@ void Experiment::stopAndMoveToStart(void)
 	mode_ = MODE_RETURN;
 	ROS_INFO("Completed rep: %d, returning to start location", cnt_rep_); 
 	actions_->Stop();
-	lc_->UpdateSteps(cnt_timesteps_);
+	//lc_->UpdateSteps(cnt_timesteps_);
 	cnt_timesteps_ = 0;
 
   // Calculate next position

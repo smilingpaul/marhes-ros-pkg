@@ -12,10 +12,11 @@
 #include "ml_light_pioneer/actions.h"
 #include "ml_light_pioneer/qlearner.h"
 #include "ml_light_pioneer/states.h"
-#include "ml_light_pioneer/learning_curve.h"
+//#include "ml_light_pioneer/learning_curve.h"
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseStamped.h"
+#include <cmath>
 
 class Experiment
 {
@@ -30,17 +31,18 @@ private:
 	double freq_, goal_radius_, start_radius_, reward_, goalx_, goaly_;
 	double bounds_[4], last_time_;
 
-  enum {MODE_REP_START, MODE_REP, MODE_RETURN, MODE_DONE}; 
+  enum {MODE_REP_START, MODE_REP_ACTION, MODE_REP_VEL_WAIT, MODE_REP_DELAY, MODE_REP_UPDATE, MODE_RETURN, MODE_DONE};
 
 	States* states_;
 	Actions* actions_;
 	QLearner* qobj_;
-	LearningCurve* lc_;
+	//LearningCurve* lc_;
 	
   ros::Publisher move_pub_, path_pub_, path_final_pub_, lc_pub_;
 	ros::Subscriber bool_sub_, odom_sub_;
 	ros::Timer timer_;
 	nav_msgs::Path path_msg_;
+  geometry_msgs::Twist action_vel_;
 
 	void odom_cb(const nav_msgs::Odometry msg);
 	void bool_cb(const std_msgs::Bool msg);
@@ -77,7 +79,7 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
 	states_ = new States(n);
 	actions_ = new Actions(n);
 	qobj_ = new QLearner(n);
-	lc_ = new LearningCurve();
+	//lc_ = new LearningCurve();
 
   path_msg_.header.frame_id = "odom";
 
@@ -87,7 +89,7 @@ Experiment::Experiment(ros::NodeHandle n):n_(n)
   lc_pub_ = n_.advertise<std_msgs::Float64>("learning_times", 1);
   bool_sub_ = n_.subscribe("move_done", 1, &Experiment::bool_cb, this);
 	odom_sub_ = n.subscribe("base_pose_ground_truth", 10, &Experiment::odom_cb, this);
-	timer_ = n.createTimer(ros::Duration(1/freq_), &Experiment::timer_cb, this);
+	timer_ = n.createTimer(ros::Duration(0.050), &Experiment::timer_cb, this);
 }
 
 void Experiment::odom_cb(const nav_msgs::Odometry msg)
@@ -123,35 +125,53 @@ void Experiment::bool_cb(const std_msgs::Bool msg)
 
 void Experiment::timer_cb(const ros::TimerEvent& event)
 {  
+  static int timer_cnt;
+  double diff_x, diff_z;
+
 	switch(mode_)
 	{
 	case MODE_REP_START:
 	  actions_->Start();
  	  last_time_ = ros::Time::now().toSec();
 		state_ = states_->GetState();
-		action_ = qobj_->GetAction(state_);
-		actions_->Move(action_);
 		ROS_INFO("Starting rep: %d", cnt_rep_);
-		mode_ = MODE_REP;
+		mode_ = MODE_REP_ACTION;
 		cnt_timesteps_++;
 		break;
-	case MODE_REP:
+  case MODE_REP_ACTION:
+  	action_ = qobj_->GetAction(state_);
+		actions_->Move(action_);
+		action_vel_ = actions_->GetVel();
+		mode_ = MODE_REP_VEL_WAIT;
+		break;
+  case MODE_REP_VEL_WAIT:
+    diff_x = abs(odom_msg_.twist.twist.linear.x - action_vel_.linear.x);
+    diff_z = abs(odom_msg_.twist.twist.angular.z - action_vel_.angular.z);
+    if (diff_x < 0.1 && diff_z < 0.1)
+      mode_ = MODE_REP_DELAY;
+    timer_cnt = 0;   
+    break;
+  case MODE_REP_DELAY:
+    // Wait for 1/freq, timer freq is 50ms
+    timer_cnt++;
+    if (timer_cnt > (1 / (freq_ * 0.050)) - 1)
+      mode_ = MODE_REP_UPDATE;
+    break;
+	case MODE_REP_UPDATE:
     state_p_ = (int)states_->GetState();
 
 		if (learn_)
 		{
 			reward_ = states_->GetReward();
 			qobj_->Update(reward_, state_, state_p_, action_);
-			ROS_INFO("Action: %d, produced state: %d with reward: %f", action_, state_p_, reward_);
+			ROS_INFO("Rep: %d, Action: %d, produced state: %d with reward: %f", cnt_rep_, action_, state_p_, reward_);
 			ROS_INFO("Table: \n%s", qobj_->PrintTable().c_str());
 		}
 
 		state_ = state_p_;
-
-    action_ = qobj_->GetAction(state_);
-		actions_->Move(action_);
 		
 		cnt_timesteps_++;
+		mode_ = MODE_REP_ACTION;
 
 		if (getDistance() < goal_radius_ || outOfBounds())
 		{
@@ -210,7 +230,7 @@ void Experiment::stopAndMoveToStart(void)
 	mode_ = MODE_RETURN;
 	ROS_INFO("Completed rep: %d, returning to start location", cnt_rep_); 
 	actions_->Stop();
-	lc_->UpdateSteps(cnt_timesteps_);
+	//lc_->UpdateSteps(cnt_timesteps_);
 	cnt_timesteps_ = 0;
 
   // Calculate next position
