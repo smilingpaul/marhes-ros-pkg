@@ -145,17 +145,24 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 		mode_ = MODE_REP_VEL_WAIT;
 		break;
   case MODE_REP_VEL_WAIT:
-    diff_x = abs(odom_msg_.twist.twist.linear.x - action_vel_.linear.x);
-    diff_z = abs(odom_msg_.twist.twist.angular.z - action_vel_.angular.z);
-    if (diff_x < 0.1 && diff_z < 0.1)
+    diff_x = std::abs(odom_msg_.twist.twist.linear.x - action_vel_.linear.x);
+    diff_z = std::abs(odom_msg_.twist.twist.angular.z - action_vel_.angular.z);
+    if (diff_x < 0.15 && diff_z < 0.15)
+    {
       mode_ = MODE_REP_DELAY;
-    timer_cnt = 0;   
+      state_ = (int)states_->GetState();    // Get state before delay
+      states_->GetReward();                 // Get reset reward before delay
+    }
+    timer_cnt = 0;
+    ROS_INFO("Waiting, %f, %f", diff_x, diff_z);   
     break;
   case MODE_REP_DELAY:
     // Wait for 1/freq, timer freq is 50ms
     timer_cnt++;
     if (timer_cnt > (1 / (freq_ * 0.050)) - 1)
       mode_ = MODE_REP_UPDATE;
+      
+    ROS_INFO("DElAY");
     break;
 	case MODE_REP_UPDATE:
     state_p_ = (int)states_->GetState();
