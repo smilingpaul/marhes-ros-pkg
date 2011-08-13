@@ -29,7 +29,7 @@ private:
   int state_, state_last_, num_states_;
   static const int ave_num_ = 5;
   double ls_vals_[4], xdist_, ydist_, hyp_, cos_ang_, sin_ang_;
-  double light_dir_, light_dir_last_, ang_inc_, ang_start_;
+  double light_dir_, light_dir_last_, ang_inc_, ang_start_, alpha_;
 
   void cb_tmr_state(const ros::TimerEvent& event);
   void cb_odom(nav_msgs::Odometry msg);

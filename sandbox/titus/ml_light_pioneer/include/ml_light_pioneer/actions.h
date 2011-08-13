@@ -13,6 +13,7 @@ public:
   int GetNumActions(void);
   void Start(void);
   void Stop(void);
+  geometry_msgs::Twist GetVel(void);
   
 private:  
   ros::NodeHandle n_;
@@ -20,7 +21,7 @@ private:
   ros::Timer tmr_vel_;
   geometry_msgs::Twist vel_msg_;
   int num_actions_;
-  double ang_vel_lim_, ang_inc_;
+  double ang_vel_lim_, ang_inc_, lin_vel_;
   std::vector<double> ang_vels_;
   bool publish_;
   

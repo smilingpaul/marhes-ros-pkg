@@ -2,7 +2,7 @@
   <!--machine name="Pioneer02" address="Pioneer02" default="never" user="marhes" password="marhes"/-->
   
   <node name="experiment" pkg="ml_light_pioneer" type="experiment" output="screen">
-	  <param name="num_reps" value="25" />
+	  <param name="num_reps" value="30" />
     <param name="freq" value="2.0" />
     <param name="goal_radius" value="0.5" />
     <param name="start_radius" value="1.25" />
@@ -15,6 +15,7 @@
    
     <param name="num_states" value="8" />  
     <param name="num_actions" value="3" />
+    <param name="alpha" value="0.3" />
     
     <param name="ang_vel_lim" value="1.0" />            
              
