@@ -95,7 +95,7 @@ VelTest::VelTest(ros::NodeHandle nh)
   
   index_ = 0;
   index_max_ = lin_vel_array_.size();
-  test_ = true;//false;
+  test_ = false;
   prev_time_ = ros::Time::now();
 
 	vel_pub_ = n_.advertise<geometry_msgs::Twist>("cmd_vel",1);
