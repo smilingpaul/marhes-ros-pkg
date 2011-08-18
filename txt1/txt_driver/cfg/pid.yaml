@@ -1,6 +1,6 @@
 # Linear Gains are a single row list:
 # proportional gain, integral gain, derivative gain
-linear_pid: [11.0,16.0,0.250]
+linear_pid: [11.0,18.0,0.250]
 
 # Angular Gains are a list of values:
 # max absolute value of linear velocity m/s, proportional gain, integral gain, 
