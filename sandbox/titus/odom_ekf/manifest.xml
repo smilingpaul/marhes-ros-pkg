@@ -1,0 +1,19 @@
+<package>
+  <description brief="odom_ekf">
+
+     odom_ekf
+
+  </description>
+  <author>marhes</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/odom_ekf</url>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
