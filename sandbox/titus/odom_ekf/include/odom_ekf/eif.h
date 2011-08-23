@@ -18,6 +18,7 @@ private:
   bool first_msg_;
   
   void CalcDCM();
+  void CalcDCM(double yaw, double pitch, double roll);
 public:
   Eif();
   void Predict(sensor_msgs::Imu msg);
