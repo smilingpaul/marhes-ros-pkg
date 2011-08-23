@@ -32,6 +32,8 @@ Eif::Eif():y_k_k_1(STATES_), y_k_k(STATES_), Y_k_k_1(STATES_, STATES_),
   H_gps(1,1) = 1;
   H_gps(2,2) = 1;
   
+  calcDCM(0, 0, 0);
+  
   first_msg_ = true;
 }
 
@@ -56,7 +58,7 @@ void Eif::Predict(sensor_msgs::Imu msg) //double ax, double wz, Matrix Q)
   g(1) = 0; g(2) = 0; g(3) = -9.805;
   CalcDCM();
   
-  double dt;
+  double dt = 0;
   if (first_msg_)
   {
     dt = 0;
@@ -122,6 +124,26 @@ void Eif::CalcDCM()
   double sp = sin(x_k_k(8));
   double cr = cos(x_k_k(9));
   double sr = sin(x_k_k(9));
+  
+  Cnb(1,1) = cp * cy;
+  Cnb(1,2) = -cr * sy + sr * sp * cy;
+  Cnb(1,3) = sr * sy + cr * sp * cy;
+  Cnb(2,1) = cp * sy;
+  Cnb(2,2) = cr * cy + sr * sp * sy;
+  Cnb(2,3) = -sr * cy + cr * sp * sr;
+  Cnb(3,1) = -sp;
+  Cnb(3,2) = sr * cp;
+  Cnb(3,3) = cr * cp;  
+}
+
+void Eif::CalcDCM(double yaw, double pitch, double roll)
+{
+  double cy = cos(yaw);
+  double sy = sin(yaw);
+  double cp = cos(pitch);
+  double sp = sin(pitch);
+  double cr = cos(roll);
+  double sr = sin(roll);
   
   Cnb(1,1) = cp * cy;
   Cnb(1,2) = -cr * sy + sr * sp * cy;
