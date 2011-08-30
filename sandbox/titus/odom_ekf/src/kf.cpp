@@ -1,6 +1,6 @@
-#include "odom_ekf/eif.h"
+#include "odom_ekf/kf.h"
 
-Eif::Eif():y_k_k_1(STATES_), y_k_k(STATES_), Y_k_k_1(STATES_, STATES_),
+Kf::Kf():y_k_k_1(STATES_), y_k_k(STATES_), Y_k_k_1(STATES_, STATES_),
            Y_k_k(STATES_, STATES_), F(STATES_, STATES_), 
            x_k_k(STATES_), x_k_k_1(STATES_), H_enc(STATES_, STATES_),
            H_gps(3, STATES_), Qc(STATES_, STATES_), G(STATES_, STATES_),
@@ -46,7 +46,7 @@ Eif::Eif():y_k_k_1(STATES_), y_k_k(STATES_), Y_k_k_1(STATES_, STATES_),
   predict_ = false;
 }
 
-void Eif::Predict(ColumnVector fn, Matrix Cnb, double dt)
+void Kf::Predict(ColumnVector fn, Matrix Cnb, double dt)
 {
   if (predict_)
   {
@@ -78,7 +78,7 @@ void Eif::Predict(ColumnVector fn, Matrix Cnb, double dt)
   predict_ = true;
 }
 
-void Eif::UpdateGPS(ColumnVector ins, ColumnVector meas, Matrix R)
+void Kf::UpdateGPS(ColumnVector ins, ColumnVector meas, Matrix R)
 {
   ColumnVector z(3);
   z = ins - meas;
@@ -86,7 +86,7 @@ void Eif::UpdateGPS(ColumnVector ins, ColumnVector meas, Matrix R)
   y = y + H_gps.transpose() * R.inverse() * z;
 }
 
-void Eif::UpdateEncoder(ColumnVector meas, Matrix R)
+void Kf::UpdateEncoder(ColumnVector meas, Matrix R)
 {
   ColumnVector z(4);
   
@@ -96,7 +96,7 @@ void Eif::UpdateEncoder(ColumnVector meas, Matrix R)
   x_k_k = Y_k_k.inverse() * y_k_k;
 }
 
-void Eif::UpdateVicon(ColumnVector meas, Matrix R)
+void Kf::UpdateVicon(ColumnVector meas, Matrix R)
 {
   ColumnVector z(2);
   
@@ -106,7 +106,7 @@ void Eif::UpdateVicon(ColumnVector meas, Matrix R)
   x_k_k = Y_k_k.inverse() * y_k_k;
 }
 
-ColumnVector Eif::GetState()
+ColumnVector Kf::GetState()
 {
   return Y.inverse() * y;
 }

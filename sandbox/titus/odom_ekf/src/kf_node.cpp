@@ -4,12 +4,12 @@
 #include "sensor_msgs/Imu.h"
 #include <wrappers/matrix/matrix_wrapper.h>
 #include "tf/tf.h"
-#include "odom_ekf/eif.h"
+#include "odom_ekf/kf.h"
 #include "odom_ekf/ins.h"
 
 using namespace MatrixWrapper;
 
-class EifNode
+class KfNode
 {
 private:
   ros::NodeHandle n_;  
@@ -21,7 +21,7 @@ private:
   
   double freq_, angular_vel_;
   bool first_gps_rx_, ins_initialized_;
-  Eif * filter_;
+  Kf * filter_;
   Ins * ins_;
        
   void imuCallback(sensor_msgs::Imu msg);
@@ -30,10 +30,10 @@ private:
   void viconCallback(geometry_msgs::PoseStamped msg);
   void tmrCallback(const ros::TimerEvent& event);
 public:
-  EifNode(ros::NodeHandle nh);
+  KfNode(ros::NodeHandle nh);
 };
 
-EifNode::EifNode(ros::NodeHandle nh)
+KfNode::KfNode(ros::NodeHandle nh)
 {
   n_ = nh;
   ros::NodeHandle n_private("~");
@@ -50,21 +50,21 @@ EifNode::EifNode(ros::NodeHandle nh)
     freq_ = 10;
   }
   
-  filter_ = new Eif();
+  filter_ = new Kf();
   ins_ = new Ins();
   
   first_gps_rx_ = true;
   ins_initialized_ = false;
   
-  imu_sub_ = n_.subscribe<sensor_msgs::Imu>("imu/data", 1, &EifNode::imuCallback, this);
-  gps_sub_ = n_.subscribe<nav_msgs::Odometry>("odom_gps", 1, &EifNode::gpsCallback, this);
-  encoder_sub_ = n_.subscribe<nav_msgs::Odometry>("odom_encoder", 1, &EifNode::encoderCallback, this);
-  vicon_sub_ = n_.subscribe<geometry_msgs::PoseStamped>("vicon_pose", 1, &EifNode::viconCallback, this);
+  imu_sub_ = n_.subscribe<sensor_msgs::Imu>("imu/data", 1, &KfNode::imuCallback, this);
+  gps_sub_ = n_.subscribe<nav_msgs::Odometry>("odom_gps", 1, &KfNode::gpsCallback, this);
+  encoder_sub_ = n_.subscribe<nav_msgs::Odometry>("odom_encoder", 1, &KfNode::encoderCallback, this);
+  vicon_sub_ = n_.subscribe<geometry_msgs::PoseStamped>("vicon_pose", 1, &KfNode::viconCallback, this);
   odom_pub_ = n_.advertise<nav_msgs::Odometry>("odom_est", 1);
-  pub_tmr_ = n_.createTimer(ros::Duration(1 / freq_), &EifNode::tmrCallback, this);
+  pub_tmr_ = n_.createTimer(ros::Duration(1 / freq_), &KfNode::tmrCallback, this);
 }
 
-void EifNode::imuCallback(sensor_msgs::Imu msg)
+void KfNode::imuCallback(sensor_msgs::Imu msg)
 {
   // Store imu message
   imu_msg_ = msg;
@@ -103,7 +103,7 @@ void EifNode::imuCallback(sensor_msgs::Imu msg)
   }
 }
 
-void EifNode::gpsCallback(nav_msgs::Odometry msg)
+void KfNode::gpsCallback(nav_msgs::Odometry msg)
 {
   if (first_gps_rx_)
   {
@@ -121,32 +121,29 @@ void EifNode::gpsCallback(nav_msgs::Odometry msg)
     
     Matrix Rgps(3, 3);
     Rgps = 0;
-    Rgps(1, 1) = 0.001; Rgps(2, 2) = 0.001; Rgps(3, 3) = 0.001;
+    Rgps(1, 1) = 0.01; Rgps(2, 2) = 0.01; Rgps(3, 3) = 0.01;
        
     // Update KIF
     filter_->UpdateGPS(ins_->GetState().sub(1, 3), meas, Rgps);
-    ROS_INFO("%f, %f, %f, %f, %f, %f, %f, %f, %f", filter_->GetState()(1), filter_->GetState()(2), 
-             filter_->GetState()(3), filter_->GetState()(4), filter_->GetState()(5), filter_->GetState()(6), 
-             filter_->GetState()(7), filter_->GetState()(8), filter_->GetState()(9)); 
-    ins_->Correct(filter_->GetState());
+    //ins_->Correct(filter_->GetState());
   }
 }
 
-void EifNode::encoderCallback(nav_msgs::Odometry msg)
+void KfNode::encoderCallback(nav_msgs::Odometry msg)
 {
   // Translate encoder velocities to base link
   // Create the BFL ColumnVector Measurement
   // Update EIF
 }
 
-void EifNode::viconCallback(geometry_msgs::PoseStamped msg)
+void KfNode::viconCallback(geometry_msgs::PoseStamped msg)
 {
   // Translate vicon pose to base link
   // Create the BFL ColumnVector Measurement
   // Update EIF
 }
 
-void EifNode::tmrCallback(const ros::TimerEvent& event)
+void KfNode::tmrCallback(const ros::TimerEvent& event)
 {
   // Get the state vector
   ColumnVector state_est = ins_->GetState();
@@ -179,7 +176,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "eif");
 	ros::NodeHandle n;
 
-	EifNode* e = new EifNode(n);
+	KfNode* e = new KfNode(n);
 	ros::spin();
 
 	return 0;

@@ -1,5 +1,5 @@
-#ifndef __EIF_H
-#define __EIF_H
+#ifndef __KF_H
+#define __KF_H
 
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
@@ -8,7 +8,7 @@
 
 using namespace MatrixWrapper;
 
-class Eif
+class Kf
 {
 private:
   static const uint32_t STATES_ = 9;
@@ -17,7 +17,7 @@ private:
   bool predict_;
 
 public:
-  Eif();
+  Kf();
   void Predict(ColumnVector fn, Matrix Cnb, double dt);
   void UpdateGPS(ColumnVector ins, ColumnVector meas, Matrix R);
   void UpdateEncoder(ColumnVector meas, Matrix R);
