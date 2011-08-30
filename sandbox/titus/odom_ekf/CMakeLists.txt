@@ -30,4 +30,5 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 rosbuild_add_executable(imu_ekf src/imu_ekf_test.cpp)
-rosbuild_add_executable(eif src/eif_node.cpp src/eif.cpp)
+rosbuild_add_executable(eif src/eif_node.cpp src/eif.cpp src/ins.cpp)
+rosbuild_add_executable(kf src/kf_node.cpp src/kf.cpp src/ins.cpp)
