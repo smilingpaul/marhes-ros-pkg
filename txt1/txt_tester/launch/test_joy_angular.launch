@@ -5,7 +5,7 @@
   
   <node name="joy" pkg="joy" type="joy_node" />
   
-  <include file="$(find txt_launch)/txt_vicon.launch" />
+  <include file="$(find txt_launch)/txt_node.launch" />
   
   <!--node name="pub_lin_vel" pkg="rostopic" type="rostopic" args="pub /lin_vel std_msgs/Float64 0.75" /-->
 </launch>
