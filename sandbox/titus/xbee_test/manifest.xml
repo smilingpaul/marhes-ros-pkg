@@ -1,0 +1,15 @@
+<package>
+  <description brief="xbee_test">
+
+     xbee_test
+
+  </description>
+  <author>Titus Appel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/xbee_test</url>
+  <depend package="roscpp"/>
+
+</package>
+
+

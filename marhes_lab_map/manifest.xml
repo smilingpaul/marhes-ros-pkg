@@ -1,0 +1,15 @@
+<package>
+  <description brief="marhes_lab_map">
+
+     marhes_lab_map
+
+  </description>
+  <author>marhes</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/marhes_lab_map</url>
+  <depend package="map_server"/>
+
+</package>
+
+

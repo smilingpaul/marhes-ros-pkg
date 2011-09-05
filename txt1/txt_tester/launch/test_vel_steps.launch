@@ -1,0 +1,6 @@
+<launch>
+  <node name="tester" pkg="txt_tester" type="test_vel_steps" output="screen">
+    <rosparam file="$(find txt_tester)/launch/vels.yaml" command="load" />
+  </node>
+  <node name="joy" pkg="joy" type="joy_node" />
+</launch>

@@ -1,0 +1,21 @@
+<package>
+  <description brief="txt_driver">
+
+     txt_driver
+
+  </description>
+  <author>Titus Appel</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/txt_driver</url>
+  <depend package="roscpp"/>
+  <depend package="geometry_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="tf"/>
+  <depend package="dynamic_reconfigure" />
+  <depend package="driver_base" />
+
+</package>
+
+

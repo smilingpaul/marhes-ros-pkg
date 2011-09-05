@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find gazebo_worlds)/launch/empty_world.launch"/>
+    <include file="$(find testbed_sim)/launch/erratic_two_mobile_base.launch" />
+</launch>

@@ -1,0 +1,7 @@
+uint8 SOURCE_ATX = 0
+uint8 SOURCE_ESC = 1
+
+uint8 source
+bool on
+---
+bool result

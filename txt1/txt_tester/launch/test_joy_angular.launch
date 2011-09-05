@@ -1,0 +1,11 @@
+<launch>
+  <node name="tester" pkg="txt_tester" type="test_joy_angular" output="screen">
+    <param name="linVelMax" value="1.5" />
+  </node>
+  
+  <node name="joy" pkg="joy" type="joy_node" />
+  
+  <include file="$(find txt_launch)/txt_node.launch" />
+  
+  <!--node name="pub_lin_vel" pkg="rostopic" type="rostopic" args="pub /lin_vel std_msgs/Float64 0.75" /-->
+</launch>
