@@ -18,26 +18,28 @@ TXT1::TXT1(ros::NodeHandle nh)
 		
 	// Initialize variables
 	shutdown_ = false;
-	pid_confirm_ = false;
 
   // Initialize the subscribers
 	cmd_vel_sub_ = n_.subscribe("/cmd_vel", 1, &TXT1::cmdVelCB, this);
 	
   // Added 'no delay' option because it was buffering every two data packets and 
   // sending old data
-	comb_odom_sub_ = n_.subscribe<nav_msgs::Odometry>("/vo", 100, 
+	comb_odom_sub_ = n_.subscribe<nav_msgs::Odometry>("/odom_comb", 100, 
 	    &TXT1::combOdomCB, this, ros::TransportHints().tcpNoDelay());
 	pwm_sub_ = n_.subscribe<txt_driver::Pwm>("/pwm", 10, &TXT1::pwmMsgCB, this);
 
 	cmd_vel_tmr_ = n_.createTimer(ros::Duration(0.1), &TXT1::cmdVelTmrCB, this);
 	comb_odom_tmr_ = n_.createTimer(ros::Duration(0.020), &TXT1::combOdomTmrCB, 
 	    this);
+	rx_process_tmr_ = n_.createTimer(ros::Duration(0.010), &TXT1::rxProcess, this);
+	pid_resp_tmr_ = n_.createTimer(ros::Duration(1.0), &TXT1::pidRespTmr, this);
+  pid_resp_tmr_.stop();
 
 	odom_pub_ = n_.advertise<nav_msgs::Odometry>("/odom", 50);
 	battery_pub_ = n_.advertise<txt_driver::Battery>("/battery", 50);
-	pid_terms_pub_ = n_.advertise<txt_driver::PidTerms>("/pid_terms", 1);
+	//pid_terms_pub_ = n_.advertise<txt_driver::PidTerms>("/pid_terms", 1);
 
-	pid_srv_ = n_.advertiseService("/pid_change", &TXT1::pidSrvCB, this);
+	//pid_srv_ = n_.advertiseService("/pid_change", &TXT1::pidSrvCB, this);
 	pid_load_srv_ = n_.advertiseService("/pid_load", &TXT1::pidLoadSrvCB, this);
   shutdown_srv_ = n_.advertiseService("/shutdown_computer", &TXT1::shutdownSrvCB, this);
   pwm_test_srv_ = n_.advertiseService("/pwm_change", &TXT1::pwmSetValsCB, this);
@@ -233,19 +235,13 @@ bool TXT1::pidLoadSrvCB(txt_driver::PidLoad::Request& request, txt_driver::PidLo
   return true;
 }
 
-void TXT1::rxPidConfirm(void)
-{
-  ROS_INFO("Called");
-  pid_confirm_ = true;
-  ROS_INFO("Reached");
-}
-
-void TXT1::rxProcess(void)
+void TXT1::rxProcess(const ros::TimerEvent& e)
 {
   msg_u * msg = rxPacket_.Receive(my_serial_);
-  if (msg != NULL)
+  while (msg != NULL)
   {
     processData(msg);
+    msg = rxPacket_.Receive(my_serial_);
   }
 }
 
@@ -302,7 +298,7 @@ void TXT1::loadPids(bool wait)
 	    ROS_ERROR("The size of the angular pid array is not a multiple of 4, exiting.");
 	    exit(0);
 	  }
-	  ROS_INFO("Gains: %f, %f, %f, %f", (double)ang_pids[0], (double)ang_pids[1], (double)ang_pids[2], (double)ang_pids[3]);
+	  //ROS_INFO("Gains: %f, %f, %f, %f", (double)ang_pids[0], (double)ang_pids[1], (double)ang_pids[2], (double)ang_pids[3]);
 	  for (int i = 0; i < size; i++)
 	  {
 	    ang_pids_.push_back((double)ang_pids[i]);
@@ -316,28 +312,23 @@ void TXT1::loadPids(bool wait)
 	  exit(0);
 	}
 	
+	
 	// Send PID gains to TXT1 robot.  Then wait for a response timeout.
   Packet packet;
   packet.BuildPid(lin_pids_, ang_pids_);
+  packet.Send(my_serial_);
+  ROS_INFO("Sending TXT1 parameters ...");
   
   if (wait)
-  { 
-    ros::Duration sleep_dur(0.25);
-    pid_confirm_ = false;
-    
-    while (pid_confirm_ == false && ros::ok())
-    {
-      packet.Send(my_serial_);
-      ROS_INFO("Sending TXT1 parameters ...");
-      sleep_dur.sleep();
-      rxProcess();
-    }  
-  }
-  else
-  {
-    packet.Send(my_serial_);
-    ROS_INFO("Sending TXT1 parameters ...");
-  }
+    pid_resp_tmr_.start();
+}
+
+void TXT1::pidRespTmr(const ros::TimerEvent& e)
+{
+  Packet packet;
+  packet.BuildPid(lin_pids_, ang_pids_);
+  packet.Send(my_serial_);
+  ROS_INFO("Sending TXT1 parameters ...");
 }
 
 void TXT1::processData(msg_u * msg)
@@ -385,7 +376,7 @@ void TXT1::processData(msg_u * msg)
 		    break;
 		  if (msg->var.data[0] == MSG_DATA_GOOD)
 		  {
-		    pid_confirm_ = true;		  
+		    pid_resp_tmr_.stop();	  
 		    ROS_INFO("Received parameter response.");
 	    }
 	    else
@@ -406,13 +397,15 @@ int main(int argc, char **argv)
   TXT1 * p = new TXT1(n);
   ros::Rate loop_rate(100);
 
-  while (ros::ok())
+/*  while (ros::ok())
   {
     p->rxProcess();
 
     ros::spinOnce();
     loop_rate.sleep();
-  }
+  }*/
+  
+  ros::spin();
   
   // Do this to make sure the computer shuts down when batteries are bad
   // Modify your /etc/sudoers file by adding a line like this:-

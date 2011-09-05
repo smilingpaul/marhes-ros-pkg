@@ -35,7 +35,7 @@ public:
 	txt_driver::Battery battery_msg_;
 	tf::TransformBroadcaster odom_broadcaster_;
 
-  bool shutdown_, pid_confirm_;
+  bool shutdown_;
 	Serial * my_serial_;
 
 	TXT1(ros::NodeHandle nh);
@@ -44,12 +44,11 @@ public:
 			double vtheta);
 	void pubBattery(double batt1, double batt2);
 	void pubPidTerms(double pterm, double iterm, double dterm, double signal);
-	void rxPidConfirm(void);
-  void rxProcess(void);
+  void rxProcess(const ros::TimerEvent& e);
 private:
 	ros::Subscriber cmd_vel_sub_, comb_odom_sub_, pwm_sub_;
 	ros::Publisher odom_pub_, battery_pub_, pid_terms_pub_;
-	ros::Timer cmd_vel_tmr_, comb_odom_tmr_;
+	ros::Timer cmd_vel_tmr_, comb_odom_tmr_, rx_process_tmr_, pid_resp_tmr_;
 	ros::ServiceServer pid_srv_, pid_load_srv_, shutdown_srv_, pwm_test_srv_, switch_pwr_srv_;
 
 	ros::NodeHandle n_, n_private_;
@@ -65,6 +64,7 @@ private:
 	
 	void cmdVelCB(const geometry_msgs::TwistConstPtr& msg);
 	void cmdVelTmrCB(const ros::TimerEvent& e);
+	void pidRespTmr(const ros::TimerEvent& e);
 	void combOdomCB(nav_msgs::Odometry msg);
 	void combOdomTmrCB(const ros::TimerEvent& e);
 	void pwmMsgCB(txt_driver::Pwm msg);

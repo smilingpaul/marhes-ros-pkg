@@ -371,8 +371,11 @@ void Packet::Send( Serial * port )
 msg_u * Packet::Receive( Serial * port )
 {
   msg_u* retMsg = NULL;
+  bool msg_rxed_flag = false;
 
-	while ((dataNum_ < MAX_PACKET_SIZE) && (port->Read(&msg_.bytes[dataNum_], 1) > 0))
+	while ((dataNum_ < MAX_PACKET_SIZE) && 
+	       (port->Read(&msg_.bytes[dataNum_], 1) > 0) &&
+	       (msg_rxed_flag == false))
 	{
 		if (dataNum_ == 0)						// Read the packet header
 		{
@@ -398,12 +401,13 @@ msg_u * Packet::Receive( Serial * port )
         
       // If last byte, process cksum               
       if(dataNum_ >= (HEADER_SIZE + msg_.var.header.var.length + CHKSUM_SIZE))
-      {                                 // then data.
+      { 
         if(Check())
         {
           retMsg = &msg_;
           totalPkts_++;
           dataNum_ = 0;
+          msg_rxed_flag = true;
         }
         else
         {
