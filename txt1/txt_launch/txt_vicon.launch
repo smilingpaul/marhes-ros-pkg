@@ -13,7 +13,7 @@
     <param name="odom_frame" value="/odom" />
     <param name="odom_topic" value="/odom" />
     <param name="freq" value="75.0" />
-    <remap from="/odom" to="/vo" />
+    <remap from="/odom" to="/odom_comb" />
   </node>
   
   <include file="$(find txt_launch)/txt_node.launch" />
