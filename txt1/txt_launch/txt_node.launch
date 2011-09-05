@@ -3,4 +3,5 @@
 	  <param name="port" value="/dev/ttyUSB0" />
 	  <rosparam command="load" file="$(find txt_driver)/cfg/pid.yaml"/>
 	</node>
+	<include file="$(find txt_launch)/txt_tf.launch" />
 </launch>

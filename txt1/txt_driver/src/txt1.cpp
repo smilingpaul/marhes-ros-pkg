@@ -151,11 +151,11 @@ void TXT1::pubOdom(double x, double y, double theta, double vx, double vtheta)
   odom_msg_.pose.pose.orientation = odom_quat_;
 
   /// set the position covariance
-  odom_msg_.pose.covariance[0] = 1.0;
-  odom_msg_.pose.covariance[7] = 1.0;
-  odom_msg_.pose.covariance[14] = 99999;
-  odom_msg_.pose.covariance[21] = 99999;
-  odom_msg_.pose.covariance[28] = 99999;
+  odom_msg_.pose.covariance[0] = 0.1;
+  odom_msg_.pose.covariance[7] = 0.1;
+  odom_msg_.pose.covariance[14] = 99999.0;
+  odom_msg_.pose.covariance[21] = 99999.0;
+  odom_msg_.pose.covariance[28] = 99999.0;
   odom_msg_.pose.covariance[35] = 0.5;
 
   //set the velocity
