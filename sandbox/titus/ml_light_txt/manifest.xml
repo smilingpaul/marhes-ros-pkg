@@ -1,0 +1,22 @@
+<package>
+  <description brief="ml_light_txt">
+
+     ml_light_txt
+
+  </description>
+  <author>titus</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ml_light_txt</url>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="geometry_msgs"/>
+  <depend package="p2os_driver"/>
+  <depend package="nav_msgs"/>
+  <depend package="phidgets_ros"/>
+  <depend package="visualization_msgs"/>
+  <depend package="joy"/>
+
+</package>
+
+
