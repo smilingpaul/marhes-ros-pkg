@@ -11,7 +11,7 @@
   <depend package="roscpp"/>
   <depend package="tf"/>
   <depend package="geometry_msgs"/>
-  <depend package="p2os_driver"/>
+  <depend package="txt_driver"/>
   <depend package="nav_msgs"/>
   <depend package="phidgets_ros"/>
   <depend package="visualization_msgs"/>
