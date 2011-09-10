@@ -1,5 +1,9 @@
 <launch>
-  <machine name="txt05" address="txt05" default="never" user="marhes" password="marhes" ros-root="/opt/ros/diamondback/ros" ros-package-path="/opt/ros/diamondback/stacks:/home/marhes/ros/stacks"/>
+  <machine name="txt05" address="txt05" default="never" user="marhes" password="marhes">
+    <env name="ROS_MASTER_URI" value="http://Control:11311" />
+  </machine>
+  <!--ros-root="/opt/ros/diamondback/ros" ros-package-path="/opt/ros/diamondback/stacks:/home/marhes/ros/stacks"/-->
+  <machine name="Control" address="Control" default="true" user="marhes" password="marhes" />
   
   <node name="experiment" pkg="ml_light_txt" type="experiment" output="screen" machine="txt05">
 	  <param name="num_reps" value="50" />
@@ -34,7 +38,7 @@
     <remap to="/interface_kit/96432/sensor/5" from="frls"/>
     <remap to="/interface_kit/96432/sensor/6" from="rlls"/>
     <remap to="/interface_kit/96432/sensor/7" from="rrls"/>
-    <remap to="/odom_comb" from="/base_pose_ground_truth"/>  
+    <remap to="/odom_vicon" from="/base_pose_ground_truth"/>  
   </node>
   
   <node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="txt05"/>
@@ -52,7 +56,7 @@
     <param name="odom_frame" value="/odom" />
     <param name="odom_topic" value="/odom" />
     <param name="freq" value="75.0" />
-    <remap from="/odom" to="/odom_comb" />
+    <remap from="/odom" to="/odom_vicon" />
   </node>
   
 	<node name="txt1_node" pkg="txt_driver" type="txt_node" output="screen" machine="txt05">
@@ -61,5 +65,5 @@
 	</node>
 	<include file="$(find txt_launch)/txt_tf.launch" />
 	
-  <node name="joystick" pkg="joy" type="joy_node" />
+  <node name="joystick" pkg="joy" type="joy_node" machine="Control"/>
 </launch>
