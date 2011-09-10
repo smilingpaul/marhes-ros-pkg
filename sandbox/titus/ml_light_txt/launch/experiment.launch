@@ -30,11 +30,11 @@
     <!--rosparam file="$(find ml_light_txt)/launch/qtable.yaml" command="load" /-->
     <!--rosparam file="$(find ml_light_txt)/launch/qtableHardware.yaml" command="load" /-->
           
-    <remap to="/interface_kit/95283/sensor/4" from="flls"/>
-    <remap to="/interface_kit/95283/sensor/5" from="frls"/>
-    <remap to="/interface_kit/95283/sensor/6" from="rlls"/>
-    <remap to="/interface_kit/95283/sensor/7" from="rrls"/>
-  
+    <remap to="/interface_kit/96432/sensor/4" from="flls"/>
+    <remap to="/interface_kit/96432/sensor/5" from="frls"/>
+    <remap to="/interface_kit/96432/sensor/6" from="rlls"/>
+    <remap to="/interface_kit/96432/sensor/7" from="rrls"/>
+    <remap to="/odom_comb" from="/base_pose_ground_truth"/>  
   </node>
   
   <node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="txt05"/>
