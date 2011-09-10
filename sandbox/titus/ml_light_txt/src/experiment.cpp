@@ -152,8 +152,8 @@ void Experiment::timer_cb(const ros::TimerEvent& event)
 		mode_ = MODE_REP_VEL_WAIT;
 		break;
   case MODE_REP_VEL_WAIT:
-    diff_x = std::abs(vel_odom_.twist.twist.linear.x - action_vel_.linear.x);//odom_msg_.twist.twist.linear.x - action_vel_.linear.x);
-    diff_z = std::abs(vel_odom_.twist.twist.angular.z - action_vel_.angular.z);//odom_msg_.twist.twist.angular.z - action_vel_.angular.z);
+    diff_x = std::abs(odom_msg_.twist.twist.linear.x - action_vel_.linear.x);
+    diff_z = std::abs(odom_msg_.twist.twist.angular.z - action_vel_.angular.z);
     if (diff_x < 0.15 && diff_z < 0.15)
     {
       mode_ = MODE_REP_DELAY;
@@ -253,7 +253,6 @@ void Experiment::stopAndMoveToStart(void)
 	actions_->Stop();
 	//lc_->UpdateSteps(cnt_timesteps_);
 	cnt_timesteps_ = 0;
-
   // Calculate next position
   //rand_ang = 2.0 * M_PI * (rand() / ((double)RAND_MAX + 1));
   //rand_orientation = 2.0 * M_PI * (rand() / ((double)RAND_MAX + 1));

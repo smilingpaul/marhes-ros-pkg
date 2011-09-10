@@ -37,6 +37,9 @@ void Actions::Start(void)
 
 void Actions::Stop(void)
 {
+  vel_msg_.linear.x = 0;
+  vel_msg_.angular.z = 0;
+  vel_pub_.publish(vel_msg_);
   publish_ = false;
 }
 
