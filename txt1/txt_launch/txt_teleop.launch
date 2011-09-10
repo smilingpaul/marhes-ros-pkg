@@ -1,5 +1,4 @@
 <launch>
-	<include file="$(find txt_launch)/txt_node.launch" />
 	<node name="joystick" pkg="joy" type="joy_node" />
 	<node name="teleop" pkg="txt_teleop" type="txt_teleop" />	
 </launch>
