@@ -1,0 +1,20 @@
+<launch>
+    <machine name="Pioneer02" address="Pioneer02" default="never" user="marhes" password="marhes" ros-root="/opt/ros/cturtle/ros" ros-package-path="/opt/ros/cturtle/stacks:/home/marhes/ros/stacks"/>
+    
+  <node name="states_test" pkg="ml_light_pioneer_changes" type="states_test" output="screen">
+    <remap to="/interface_kit/95283/sensor/4" from="flls"/>
+    <remap to="/interface_kit/95283/sensor/5" from="frls"/>
+    <remap to="/interface_kit/95283/sensor/6" from="rlls"/>
+    <remap to="/interface_kit/95283/sensor/7" from="rrls"/>
+    <param name="alpha" value="0.9" />
+  </node>
+  
+    <node name="motor_state_pub" pkg="rostopic" type="rostopic" args="pub /cmd_motor_state p2os_driver/MotorState 1"  machine="Pioneer02"/>
+  
+  <node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="Pioneer02"/>
+
+  <node name="pioneer" pkg="p2os_driver" type="p2os" output="screen" machine="Pioneer02">
+    <remap from="pose" to="base_pose_ground_truth" />
+  </node>
+
+</launch>
