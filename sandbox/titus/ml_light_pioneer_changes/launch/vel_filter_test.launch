@@ -1,0 +1,14 @@
+<launch>
+  <node name="tester" pkg="txt_tester" type="test_vel_steps">
+    <rosparam file="$(find ml_light_pioneer_changes)/launch/vels_test.yaml" command="load" />
+    <remap to="vel_in" from="/cmd_vel" />
+  </node>
+  
+  <node name="stage" pkg="stage" type="stageros" args="$(find ml_light_pioneer_changes)/world/square.world">
+    <remap to="/vel_out" from="/cmd_vel" />
+  </node>
+  
+  <node name="vel_filter" pkg="ml_light_pioneer_changes" type="vel_filter" output="screen"/>
+  
+  <node name="joy" pkg="joy" type="joy_node" />
+</launch>
