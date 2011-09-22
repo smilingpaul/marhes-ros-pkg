@@ -1,16 +1,16 @@
 <launch>
   <node name="tf_base_imu" pkg="tf" type="static_transform_publisher" 
-   args="-0.08509 0 0.21844 3.14159 0 3.14159 base_link imu 100" />
+   args="-0.08509 0 0.21844 3.14159 0 3.14159 base_link imu 50" />
    
   <node name="tf_base_gps" pkg="tf" type="static_transform_publisher" 
-   args="-0.05842 0 0.25019 0 0 0 base_link gps 100" />
-   
+   args="-0.05842 0 0.25019 0 0 0 base_link gps 50" />
+    
   <node name="tf_base_footprint" pkg="tf" type="static_transform_publisher" 
-   args="0 0 -0.2286 0 0 0 base_link base_footprint 100" />
+   args="0 0 0.2286 0 0 0 base_footprint base_link 50" />
    
   <node name="tf_base_laser" pkg="tf" type="static_transform_publisher" 
-   args="0.1905 0 0.06223 0 0 0 base_link base_laser 100" />
+   args="0.1905 0 0.06223 0 0 0 base_link laser 50" />
    
   <node name="tf_base_kinect" pkg="tf" type="static_transform_publisher"
-   args="0.13335 0 0.127 0 0 0 base_link base_kinect 100" />
+   args="0.13335 0 0.127 0 0 0 base_link openni_camera 50" />
 </launch>
