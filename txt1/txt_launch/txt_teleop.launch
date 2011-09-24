@@ -1,4 +1,6 @@
 <launch>
 	<node name="joystick" pkg="joy" type="joy_node" />
-	<node name="teleop" pkg="txt_teleop" type="txt_teleop" />	
+	<node name="teleop" pkg="txt_teleop" type="txt_teleop" >
+	  <param name="linAxis" value="2" />
+	</node>	
 </launch>

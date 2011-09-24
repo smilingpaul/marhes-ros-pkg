@@ -1,0 +1,69 @@
+<launch>
+  <machine name="txt05" address="txt05" default="never" user="marhes" password="marhes">
+    <env name="ROS_MASTER_URI" value="http://Control:11311" />
+  </machine>
+  <!--ros-root="/opt/ros/diamondback/ros" ros-package-path="/opt/ros/diamondback/stacks:/home/marhes/ros/stacks"/-->
+  <machine name="Control" address="Control" default="true" user="marhes" password="marhes" />
+  
+  <node name="experiment" pkg="ml_light_txt_changes" type="experiment" output="screen" machine="txt05">
+	  <param name="num_reps" value="50" />
+    <param name="freq" value="1.0" />
+    <param name="goal_radius" value="0.5" />
+    <param name="start_radius" value="1.15" />
+    <param name="goalx" value="0.0" />
+    <param name="goaly" value="0.0" />
+    <param name="bounds/tlx" value="-1.75" />
+    <param name="bounds/tly" value="2.25" />
+    <param name="bounds/brx" value="1.75" />
+    <param name="bounds/bry" value="-2.25" />
+   
+    <param name="num_states" value="8" />  
+    <param name="num_actions" value="3" />
+    <param name="alpha" value="0.9" />
+    
+    <param name="ang_vel_lim" value="0.536" />            
+             
+    <param name="learning_rate" value="0.3" />            
+    <param name="discount_factor" value="0.5" />            
+    <param name="temp_const" value="5.0" />            
+    <param name="temp_alpha" value="0.65" />   
+    
+    <param name="xdist" value="10 / 0.0254" />   
+    <param name="ydist" value="3.5 / 0.0254" /> 
+    
+    <!--rosparam file="$(find ml_light_txt_changes)/launch/qtable.yaml" command="load" /-->
+    <!--rosparam file="$(find ml_light_txt_changes)/launch/qtableHardware.yaml" command="load" /-->
+          
+    <remap to="/interface_kit/96432/sensor/4" from="flls"/>
+    <remap to="/interface_kit/96432/sensor/5" from="frls"/>
+    <remap to="/interface_kit/96432/sensor/6" from="rlls"/>
+    <remap to="/interface_kit/96432/sensor/7" from="rrls"/>
+    <remap to="/odom_vicon" from="/base_pose_ground_truth"/>  
+  </node>
+  
+  <node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="txt05"/>
+
+  <!-- Launch the VICON Node -->
+  <node name="vicon_pose" pkg="vicon_vrpn" type="vicon_to_pose" machine="txt05">
+    <param name="subject" value="txt01" />
+    <param name="freq" value="100.0" />
+    <param name="host_addr" value="Vicon" />
+    <param name="tf_ref_frame" value="/odom" />
+  </node>
+  
+  <!-- Launch the Kalman Filter to get the velocity information -->
+  <node name="pose_to_odom" pkg="vicon_vrpn" type="vicon_pose_to_odom" machine="txt05">
+    <param name="odom_frame" value="/odom" />
+    <param name="odom_topic" value="/odom" />
+    <param name="freq" value="75.0" />
+    <remap from="/odom" to="/odom_vicon" />
+  </node>
+  
+	<node name="txt1_node" pkg="txt_driver" type="txt_node" output="screen" machine="txt05">
+	  <param name="port" value="/dev/ttyUSB0" />
+	  <rosparam command="load" file="$(find txt_driver)/cfg/pid.yaml"/>
+	</node>
+	<include file="$(find txt_launch)/txt_tf.launch" />
+	
+  <node name="joystick" pkg="joy" type="joy_node" machine="Control"/>
+</launch>

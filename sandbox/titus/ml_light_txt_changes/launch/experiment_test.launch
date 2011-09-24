@@ -1,0 +1,64 @@
+<launch>
+  <!--machine name="Pioneer02" address="Pioneer02" default="never" user="marhes" password="marhes"/-->
+  
+  <node name="experiment" pkg="ml_light_txt_changes" type="experiment" output="screen">
+	  <param name="num_reps" value="30" />
+    <param name="freq" value="2.0" />
+    <param name="goal_radius" value="0.5" />
+    <param name="start_radius" value="1.25" />
+    <param name="goalx" value="0.0" />
+    <param name="goaly" value="0.0" />
+    <param name="bounds/tlx" value="-1.75" />
+    <param name="bounds/tly" value="2.25" />
+    <param name="bounds/brx" value="1.75" />
+    <param name="bounds/bry" value="-2.25" />
+   
+    <param name="num_states" value="8" />  
+    <param name="num_actions" value="3" />
+    <param name="alpha" value="0.3" />
+    
+    <param name="ang_vel_lim" value="1.0" />            
+             
+    <param name="learning_rate" value="0.3" />            
+    <param name="discount_factor" value="0.5" />            
+    <param name="temp_const" value="5.0" />            
+    <param name="temp_alpha" value="0.65" />   
+    
+    <param name="xdist" value="8 / 0.0254" />   
+    <param name="ydist" value="6 / 0.0254" /> 
+    
+    <!--rosparam file="$(find ml_light_txt_changes)/launch/qtable.yaml" command="load" /-->
+       
+    <!--remap to="/interface_kit/95283/sensor/4" from="flls"/>
+    <remap to="/interface_kit/95283/sensor/5" from="frls"/>
+    <remap to="/interface_kit/95283/sensor/6" from="rlls"/>
+    <remap to="/interface_kit/95283/sensor/7" from="rrls"/-->
+  
+  </node>
+  
+  <!--node name="move_simple" pkg="ml_light_txt_changes" type="move_simple" output="screen">
+    <param name="max_lin_vel" value="0.5" />
+    <param name="max_ang_vel" value="1.0" />
+  </node-->
+  
+  <node name="stage_node" pkg="stage" type="stageros" args="$(find ml_light_txt_changes)/world/square.world" output="screen" />
+  
+  <node name="light_sensor" pkg="ml_light_txt_changes" type="light_sensor" />
+  
+  <node name="joystick" pkg="joy" type="joy_node" />
+  
+  <!--node name="phidgets" pkg="phidgets_ros" type="interface_kit.py" output="screen" machine="Pioneer02"/-->
+
+  <!--node name="pioneer" pkg="p2os_driver" type="p2os" output="screen" machine="Pioneer02"/-->
+
+  <!--include file="$(find vicon_vrpn)/launch/vicon_vrpn.launch" /-->
+  
+  <!--node name="vicon_to_odom" pkg="vicon_vrpn" type="vicon_tf_to_odom" >
+    <param name="odom_frame" value="vicon_odom" />
+    <param name="frame" value="Pioneer05/vicon" />
+    <param name="odom_topic" value="base_pose_ground_truth" />
+  </node-->
+  
+  <!--node name="odom_to_vicon_odom" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 odom vicon_odom 10" /-->
+
+</launch>
