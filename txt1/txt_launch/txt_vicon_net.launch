@@ -1,0 +1,26 @@
+<launch>
+
+  <!-- Launch the VICON Node -->
+  <node name="vicon_pose" pkg="vicon_vrpn" type="vicon_to_pose" >
+    <param name="subject" value="txt01" />
+    <param name="freq" value="100.0" />
+    <param name="host_addr" value="Vicon" />
+    <param name="tf_ref_frame" value="/odom" />
+  </node>
+  
+  <!-- Launch the Kalman Filter to get the velocity information -->
+  <node name="pose_to_odom" pkg="vicon_vrpn" type="vicon_pose_to_odom" >
+    <param name="odom_frame" value="/odom" />
+    <param name="odom_topic" value="/odom" />
+    <param name="freq" value="75.0" />
+    <remap from="/odom" to="/odom_comb" />
+  </node>
+  
+  <arg name="client" />
+  <arg name="host" />
+	<include file="$(find txt_launch)/txt_node_net.launch">
+	  <arg name="client" value="$(arg client)" />
+ 	  <arg name="host" value="$(arg host)" />
+ 	</include>
+
+</launch>

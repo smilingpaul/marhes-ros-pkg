@@ -7,7 +7,7 @@
   
   <node name="experiment" pkg="ml_light_txt_changes" type="experiment" output="screen" machine="txt05">
 	  <param name="num_reps" value="50" />
-    <param name="freq" value="1.0" />
+    <param name="freq" value="2.0" />
     <param name="goal_radius" value="0.5" />
     <param name="start_radius" value="1.15" />
     <param name="goalx" value="0.0" />
@@ -28,8 +28,8 @@
     <param name="temp_const" value="5.0" />            
     <param name="temp_alpha" value="0.65" />   
     
-    <param name="xdist" value="10 / 0.0254" />   
-    <param name="ydist" value="3.5 / 0.0254" /> 
+    <param name="xdist" value="9 / 0.0254" />   
+    <param name="ydist" value="5.5 / 0.0254" /> 
     
     <!--rosparam file="$(find ml_light_txt_changes)/launch/qtable.yaml" command="load" /-->
     <!--rosparam file="$(find ml_light_txt_changes)/launch/qtableHardware.yaml" command="load" /-->
@@ -63,7 +63,8 @@
 	  <param name="port" value="/dev/ttyUSB0" />
 	  <rosparam command="load" file="$(find txt_driver)/cfg/pid.yaml"/>
 	</node>
-	<include file="$(find txt_launch)/txt_tf.launch" />
+	
+	<!--include file="$(find txt_launch)/txt_tf.launch" /-->
 	
   <node name="joystick" pkg="joy" type="joy_node" machine="Control"/>
 </launch>
