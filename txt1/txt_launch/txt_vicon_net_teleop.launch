@@ -1,7 +1,7 @@
 <launch>
   <arg name="client" />
   <arg name="host" />
-	<include file="$(find txt_launch)/txt_vicon.launch" >
+	<include file="$(find txt_launch)/txt_vicon_net.launch" >
 		<arg name="client" value="$(arg client)" />
  	  <arg name="host" value="$(arg host)" />
  	</include>

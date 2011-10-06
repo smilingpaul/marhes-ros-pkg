@@ -1,0 +1,12 @@
+<launch>
+  <arg name="client" />
+  <arg name="host" />
+  <machine name="txt" address="$(arg client)" user="marhes" password="marhes">
+    <env name="ROS_MASTER_URI" value="http://$(arg host):11311"/>
+  </machine>
+	<node name="txt1_node" pkg="txt_driver" type="txt_node" output="screen" machine="txt">
+	  <param name="port" value="/dev/ttyUSB0" />
+	  <rosparam command="load" file="$(find txt_driver)/cfg/pid.yaml"/>
+	</node>
+	<include file="$(find txt_launch)/txt_tf.launch" />
+</launch>
