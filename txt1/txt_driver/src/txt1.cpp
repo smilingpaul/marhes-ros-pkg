@@ -15,6 +15,8 @@ TXT1::TXT1(ros::NodeHandle nh)
 	std::string def = "/dev/ttyUSB0";
 	n_private_.param("port", port_, def);
 	n_private_.param("pwr_auto", pwr_auto_, false);
+	n_private_.param("batt1", batt1_, true);
+	n_private_.param("batt2", batt2_, false);
 		
 	// Initialize variables
 	shutdown_ = false;
@@ -175,6 +177,20 @@ void TXT1::pubBattery(double batt1, double batt2)
 	battery_msg_.header.frame_id = "battery";
 	battery_msg_.batt1 = batt1;
 	battery_msg_.batt2 = batt2;
+	
+	// Calculate the expected time left of the batteries
+	// the curve used is V = -0.033691t + 12.165769
+	double v, t;
+	if (batt1_ && !batt2_)
+	  v = batt1;
+  else if (!batt1_ && batt2_)
+    v = batt2;
+  else
+    v = (batt1 + batt2) / 2;
+  
+  t = ((v - 12.165769) / -0.033691) * 60.0;
+  t = -1 * (t - 50 * 60);
+	battery_msg_.expected_time = ros::Duration(t);
 	battery_pub_.publish(battery_msg_);
 }
 
