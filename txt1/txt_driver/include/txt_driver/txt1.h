@@ -53,7 +53,7 @@ private:
 
 	ros::NodeHandle n_, n_private_;
 	std::string port_;
-	bool pwr_auto_, use_comb_odom_;
+	bool pwr_auto_, use_comb_odom_, batt1_, batt2_;
 	int comb_odom_cnt_;
 	static const int COMB_ODOM_CNT_LIMIT_ = 5;
 	static const int LIN_PID_VALS_ = 3;

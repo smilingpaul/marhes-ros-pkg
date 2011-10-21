@@ -8,6 +8,8 @@
 
   <node pkg="pioneer_setup_tf" type="pioneer_setup_tf" name="pioneer_setup_tf" output="screen">
   </node>
+  
+  <node pkg="tf" type="static_transform_publisher" name="robot_tf" args="1 2 3 4 5 6 base_link base_laser 50"/>
 
   <node pkg="pioneer_cmd_motor_state" type="pioneer_cmd_motor_state" name="pioneer_cmd_motor_state" output="screen">
   </node>
